@@ -8,6 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 interface WorldChumoPortalProps {
   language?: string;
   showToast?: (msg: string) => void;
+  topRightControls?: React.ReactNode;
 }
 
 // Minimal placeholder SVGs to be drawn via CSS masks or raw shapes
@@ -111,7 +112,8 @@ const protagonists = [
 ];
 
 export const WorldChumoPortal: React.FC<WorldChumoPortalProps> = ({ 
-  showToast 
+  showToast,
+  topRightControls
 }) => {
   const navigate = useNavigate();
   const [selectedProId, setSelectedProId] = useState<string | null>(null);
@@ -156,6 +158,12 @@ export const WorldChumoPortal: React.FC<WorldChumoPortalProps> = ({
           </motion.button>
         )}
       </AnimatePresence>
+
+      {topRightControls && (
+        <div className="absolute top-8 right-8 md:top-12 md:right-12 z-[100] pointer-events-auto">
+          {topRightControls}
+        </div>
+      )}
 
       {/* TOP 75% Grid Area */}
       <div className="absolute top-0 left-0 w-full h-[75%] flex z-10">
@@ -324,7 +332,7 @@ export const WorldChumoPortal: React.FC<WorldChumoPortalProps> = ({
         <div className="text-center font-bold tracking-[0.3em]">
           CARTOGRAPHER'S ARCHIVE · VOLUME I · 初墨卷
         </div>
-        <button onClick={() => navigate(-1)} className="hover:text-[var(--accent-brass)] transition-colors inline-block cursor-pointer flex items-center gap-1">
+        <button onClick={() => navigate('/')} className="hover:text-[var(--accent-brass)] transition-colors inline-block cursor-pointer flex items-center gap-1">
           <ArrowLeft className="w-3 h-3" /> RETURN TO ATLAS
         </button>
       </div>

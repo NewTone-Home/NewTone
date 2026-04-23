@@ -1,38 +1,52 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'day' | 'night';
+type Lang = 'zh' | 'en' | 'ja';
 
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  lang: Lang;
+  toggleLang: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('day');
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('newtone-theme');
+    return (saved as Theme) || 'day';
+  });
+
+  const [lang, setLang] = useState<Lang>(() => {
+    const saved = localStorage.getItem('newtone-lang');
+    return (saved as Lang) || 'zh';
+  });
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('newtone-theme') as Theme | null;
-    if (savedTheme === 'day' || savedTheme === 'night') {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    } else {
-      document.documentElement.setAttribute('data-theme', 'day');
-    }
-  }, []);
+    localStorage.setItem('newtone-theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('newtone-lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+  }, [lang]);
 
   const toggleTheme = () => {
-    setTheme(prev => {
-      const newTheme = prev === 'day' ? 'night' : 'day';
-      localStorage.setItem('newtone-theme', newTheme);
-      document.documentElement.setAttribute('data-theme', newTheme);
-      return newTheme;
+    setTheme(prev => (prev === 'day' ? 'night' : 'day'));
+  };
+
+  const toggleLang = () => {
+    setLang(prev => {
+      if (prev === 'zh') return 'en';
+      if (prev === 'en') return 'ja';
+      return 'zh';
     });
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, lang, toggleLang }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -44,4 +58,9 @@ export const useTheme = () => {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
+};
+
+export const useLang = () => {
+  const { lang, toggleLang } = useTheme();
+  return { lang, toggleLang };
 };
