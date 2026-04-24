@@ -209,3 +209,5 @@ export const Library: React.FC = () => {
     </div>
   );
 };
+
+export default Library;

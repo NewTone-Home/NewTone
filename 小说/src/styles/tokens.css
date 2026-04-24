@@ -14,16 +14,20 @@
 }
 
 [data-theme="day"] {
-  --bg: #F3E9D0;
+  --bg: #EDE2C4;
+  --bg-rgb: 237, 226, 196;
   --ink: #2E2418;
+  --ink-rgb: 46, 36, 24;
   --brass: #8B6F3E;
   --seal-red: #8B2F28;
   --parchment-shadow: rgba(139, 111, 62, 0.15);
 }
 
 [data-theme="night"] {
-  --bg: #0B1220;
+  --bg: #0A111E;
+  --bg-rgb: 10, 17, 30;
   --ink: #E8E4DC;
+  --ink-rgb: 232, 228, 220;
   --brass: #B8935A;
   --seal-red: #7A2B25;
   --parchment-shadow: rgba(184, 147, 90, 0.2);
