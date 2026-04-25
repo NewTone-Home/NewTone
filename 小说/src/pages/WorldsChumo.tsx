@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { GlobalHeader } from '../components/GlobalHeader';
 import { CharacterCard } from '../components/CharacterCard';
-import { MainLineCard } from '../components/MainLineCard';
 import { isRouteUnlocked } from '../services/progressService';
 import { Route as ReadingRoute } from '../types';
 
@@ -61,7 +60,7 @@ const CHARACTERS = [
     name: { zh: '姬云灵·笺', en: 'JI YUNLING', ja: 'キ・ウンレイ' },
     epithet: { zh: '笺', en: 'NOTE', ja: '笺' },
     seal: { kanji: '封' },
-    unlockHint: { zh: '启封条件·读完主线第 3 章', en: 'Unlock · Complete Main Ch. 3', ja: '解封条件·本線第三章読了' },
+    unlockHint: { zh: '启封条件·累计读完 3 章', en: 'Unlock · Total 3 Chapters', ja: '解封条件·累計三章読了' },
     unlock: 3,
     route: '/read/yunling/1'
   },
@@ -77,37 +76,11 @@ const CHARACTERS = [
     alias: { zh: '老爷子', en: 'The Old Master', ja: '御老人' },
     epithet: { zh: '藏', en: 'HIDDEN', ja: '蔵' },
     seal: { kanji: '缄' },
-    unlockHint: { zh: '启封条件·读完主线第 8 章', en: 'Unlock · Complete Main Ch. 8', ja: '解封条件·本線第八章読了' },
+    unlockHint: { zh: '启封条件·累计读完 8 章', en: 'Unlock · Total 8 Chapters', ja: '解封条件·累計八章読了' },
     unlock: 8,
     route: '/read/chengyuan/1'
   }
 ];
-
-const MAIN_LINE = {
-  id: 'main',
-  romanIndex: '※',
-  trigram: '☯',
-  anchor: '主',
-  colorHex: '#8B6F3E',
-  colorLabel: { zh: '黄铜', en: 'HUANGTONG', ja: '黄銅' },
-  volumeNum: { zh: '主卷', en: 'MAIN VOL.', ja: '本線巻' },
-  name: { zh: '主线·合', en: 'MAIN LINE', ja: '本線' },
-  epithet: { zh: '合', en: 'CONVERGE', ja: '合' },
-  identity: { zh: '修杰×若雨·交叉视角完整叙事', en: 'Xiujie × Ruoyu · full dual-POV narrative', ja: '修傑×若雨·完全交差視点' },
-  quote: {
-    zh: '「两执一笔，真理于纸上分岔。」',
-    en: '"Two hands, one brush — truth splits upon the page."',
-    ja: '「二手一筆、真理は紙上にて分岐す。」'
-  },
-  metadata: {
-    volumeNum: { zh: '主卷', en: 'MAIN', ja: '本線' },
-    appears: { zh: '见·全卷', en: 'SPANS · ALL', ja: '登場·全巻' },
-    words: { zh: '字·约两万', en: 'WORDS · ~20,000', ja: '字数·約二万' },
-    role: { zh: '别·双主 POV', en: 'ROLE · DUAL POV', ja: '役·双主 POV' }
-  },
-  unlock: 0,
-  route: '/read/main/1'
-};
 
 export function WorldsChumo() {
   const navigate = useNavigate();
@@ -122,15 +95,36 @@ export function WorldsChumo() {
   // 切换路线或回 L1 时自动退出阅读态
   useEffect(() => { setIsReading(false) }, [selectedRoute]);
 
-  const title = { zh: '初墨卷 · 五卷选角', en: 'CHUMO · FIVE VOLUMES', ja: '初墨巻·五巻選角' };
+  const title = { zh: '初墨卷 · 四卷选角', en: 'CHUMO · FOUR VOLUMES', ja: '初墨巻·四巻選角' };
   const back = { zh: '← 返回书架', en: '← Back to Library', ja: '← 書架に戻る' };
 
   const handleSelect = (id: ReadingRoute) => {
-    if (selectedRoute === id) return; // 点自己无效
     if (isReading) return; // L3 状态，偷瞄卡不响应
-    if (selectedRoute) navigate('/worlds/chumo'); // L2 状态，点偷瞄回 L1
-    else navigate(`/read/${id}/1`); // L1 状态，进入 L2
+    if (selectedRoute === id) {
+      navigate('/worlds/chumo'); // 点自己则关闭，回 L1
+    } else if (selectedRoute) {
+      navigate('/worlds/chumo'); // L2 状态，点其它偷瞄也回 L1 (或跳切，这里跳切更直观)
+      // If you want to jump directly: navigate(`/read/${id}/1`);
+    } else {
+      navigate(`/read/${id}/1`); // L1 状态，进入 L2
+    }
   };
+
+  // ESC 键全局监听，关闭展开的卡片
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isReading) {
+          setIsReading(false);
+          navigate('/worlds/chumo');
+        } else if (selectedRoute) {
+          navigate('/worlds/chumo');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isReading, selectedRoute, navigate]);
 
   return (
     <div className="chumo-page">
@@ -178,16 +172,6 @@ export function WorldsChumo() {
           onStartReading={() => setIsReading(true)}
           onExitReading={() => { setIsReading(false); navigate('/worlds/chumo'); }}
           onChapterSelect={(n) => navigate(`/read/chengyuan/${n}`)}
-        />
-        <MainLineCard 
-          data={MAIN_LINE} 
-          active={selectedRoute === 'main'} 
-          reading={isReading && selectedRoute === 'main'}
-          currentChapter={currentChapter}
-          onSelect={() => handleSelect('main')}
-          onStartReading={() => setIsReading(true)}
-          onExitReading={() => { setIsReading(false); navigate('/worlds/chumo'); }}
-          onChapterSelect={(n) => navigate(`/read/main/${n}`)}
         />
       </div>
       {!selectedRoute && <div className="chumo-back" onClick={() => navigate('/library')}>{back[lang]}</div>}

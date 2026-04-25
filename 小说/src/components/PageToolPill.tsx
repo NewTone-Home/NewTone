@@ -10,7 +10,7 @@ export const PageToolPill: React.FC<{ phase?: HeaderPhase }> = ({ phase = 'idle'
   const [showOptions, setShowOptions] = useState(false);
   const [modePhase, setModePhase] = useState<'idle' | 'switching'>('idle');
   const [displayIcon, setDisplayIcon] = useState('');
-  const hideTimerRef = useRef<number>();
+  const hideTimerRef = useRef<number | undefined>(undefined);
   const hoveringRef = useRef(false);
 
   const themeOptions = [

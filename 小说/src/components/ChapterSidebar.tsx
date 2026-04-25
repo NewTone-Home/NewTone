@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { UI_TRANSLATIONS, ROUTE_FALLBACK } from '../locales';
-import { getUnlockedChaptersForRoute, getChaptersForRoute } from '../services/chapterLoader';
+import { listChapters } from '../services/chapterLoader';
 import { Route } from '../types';
 import { getRouteProgress } from '../services/progressService';
 
@@ -20,12 +20,15 @@ export const ChapterSidebar: React.FC<ChapterSidebarProps> = ({
   const [collapsed, setCollapsed] = useState(false);
   const progress = getRouteProgress(route);
   
-  const unlockedChapters = getUnlockedChaptersForRoute(route);
-  const allChapters = getChaptersForRoute(route);
+  const allChapters = listChapters(route);
+  const totalChapters = allChapters.length;
+  
+  // 简单逻辑：已读章节 + 下一章
+  const unlockedLimit = progress.unlockedCount + 1;
+  const unlockedChapters = allChapters.filter(ch => ch.chapter <= unlockedLimit || progress.readChapters.includes(ch.chapter));
   
   const readMains = progress.readChapters;
   const readCount = readMains.length;
-  const totalChapters = allChapters.length;
   const hasLockedAhead = unlockedChapters.length < totalChapters;
 
   const t = (key: string) => {
@@ -56,20 +59,19 @@ export const ChapterSidebar: React.FC<ChapterSidebarProps> = ({
 
       <nav className="cs-list">
         {unlockedChapters.map(ch => {
-          const isRead = readMains.includes(ch.mainChapter);
-          const isCurrent = ch.routeChapter === currentRouteChapter;
+          const isRead = readMains.includes(ch.chapter);
+          const isCurrent = ch.chapter === currentRouteChapter;
           return (
             <div
-              key={ch.routeChapter}
+              key={ch.chapter}
               className={`cs-item ${isCurrent ? 'current' : ''} ${isRead ? 'read' : ''}`}
-              onClick={() => onSelect(ch.routeChapter)}
+              onClick={() => onSelect(ch.chapter)}
             >
               <div className="cs-item-indicator">
                 {isRead ? '◉' : isCurrent ? '○' : '·'}
               </div>
               <div className="cs-item-body">
                 <div className="cs-item-title">{ch.title}</div>
-                <div className="cs-item-anchor">{ch.timeAnchor}</div>
               </div>
             </div>
           );

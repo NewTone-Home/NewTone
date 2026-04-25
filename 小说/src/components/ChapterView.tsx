@@ -1,10 +1,11 @@
 import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { UI_TRANSLATIONS } from '../locales';
-import { getChaptersForRoute } from '../services/chapterLoader';
+import { loadChapter, listChapters } from '../services/chapterLoader';
 import { markChapterRead, getFontSize } from '../services/progressService';
 import { FontSize, Route } from '../types';
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 
 const FS_MAP: Record<FontSize, string> = { 
   small: '16px', 
@@ -20,8 +21,8 @@ interface ChapterViewProps {
 export function ChapterView({ route, currentRouteChapter }: ChapterViewProps) {
   const { lang } = useTheme();
   const navigate = useNavigate();
-  const chapters = getChaptersForRoute(route);
-  const currentChapter = chapters[currentRouteChapter - 1];
+  const chapters = listChapters(route);
+  const currentChapter = loadChapter(route, currentRouteChapter);
   const fs = getFontSize();
 
   const t = (key: string) => UI_TRANSLATIONS[lang]?.[key] || key;
@@ -31,7 +32,8 @@ export function ChapterView({ route, currentRouteChapter }: ChapterViewProps) {
   const isLastChapter = currentRouteChapter === chapters.length;
 
   const handleNext = () => {
-    markChapterRead(route, currentChapter.mainChapter, currentChapter.routeChapter);
+    // Current design uses route chapter as main chapter for simplified progress
+    markChapterRead(route, currentChapter.chapter, currentRouteChapter);
     if (!isLastChapter) {
       navigate(`/read/${route}/${currentRouteChapter + 1}`);
     }
@@ -45,14 +47,9 @@ export function ChapterView({ route, currentRouteChapter }: ChapterViewProps) {
       <h1 className="read-title">{currentChapter.title}</h1>
       <div className="read-time-anchor">{currentChapter.timeAnchor}</div>
       
-      {currentChapter.segments.map((seg, i) => (
-        <React.Fragment key={i}>
-          <div className="read-body">{seg.content}</div>
-          {i < currentChapter.segments.length - 1 && (
-            <div className="read-divider">※　　※　　※</div>
-          )}
-        </React.Fragment>
-      ))}
+      <div className="read-body markdown-body">
+        <ReactMarkdown>{currentChapter.content}</ReactMarkdown>
+      </div>
       
       <div className="read-nav">
         <button disabled={currentRouteChapter === 1} onClick={prev} className="read-nav-btn">

@@ -29,7 +29,7 @@ const OPTIONS = {
 export const ZhupiAnnotations: React.FC = () => {
   const { theme, setTheme, lang, setLang, fontSize, setFontSize } = useTheme()
   const [active, setActive] = useState<GroupKey | null>(null)
-  const hideTimerRef = useRef<number>()
+  const hideTimerRef = useRef<number | undefined>(undefined)
   
   const handleEnter = (key: GroupKey) => {
     if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current)

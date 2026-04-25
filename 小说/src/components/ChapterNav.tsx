@@ -1,8 +1,10 @@
 import React from 'react';
-import { getRouteProgress, getTotalChaptersForRoute } from '../services/progressService';
+import { getRouteProgress } from '../services/progressService';
+import { listChapters } from '../services/chapterLoader';
+import { Route } from '../types';
 
 type Props = {
-  route: string;
+  route: Route;
   currentChapter: number;
   onSelect: (chapter: number) => void;
 };
@@ -11,26 +13,25 @@ const cnNum = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'
 
 const ChapterNav: React.FC<Props> = ({ route, currentChapter, onSelect }) => {
   const progress = getRouteProgress(route);
-  const total = getTotalChaptersForRoute(route);
+  const chapters = listChapters(route);
+  const total = chapters.length;
 
-  const items = [];
-  for (let i = 1; i <= progress.unlockedCount; i++) {
-    items.push({
-      chapter: i,
-      title: `第${cnNum[i] || i}章`,
-      isRead: progress.readChapters.includes(i),
-      isCurrent: i === currentChapter,
-      isLocked: false
-    });
-  }
+  const items = chapters.map(ch => ({
+    chapter: ch.chapter,
+    title: ch.title,
+    isRead: progress.readChapters.includes(ch.chapter),
+    isCurrent: ch.chapter === currentChapter,
+    isLocked: ch.chapter > progress.unlockedCount + 1 && !progress.readChapters.includes(ch.chapter)
+  }));
 
-  if (progress.unlockedCount < total) {
+  // 如果没有章节数据，提供占位
+  if (items.length === 0) {
     items.push({
-      chapter: progress.unlockedCount + 1,
-      title: '未解锁章节',
+      chapter: 1,
+      title: '第一章',
       isRead: false,
-      isCurrent: false,
-      isLocked: true
+      isCurrent: true,
+      isLocked: false
     });
   }
 

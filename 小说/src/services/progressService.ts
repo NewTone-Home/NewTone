@@ -24,8 +24,7 @@ export function getTotalChaptersForRoute(route: string): number {
     jixiu: 8,
     ruoyu: 8,
     yunling: 6,
-    chengyuan: 5,
-    main: 10
+    chengyuan: 5
   };
   return totals[route] || 0;
 }
@@ -56,19 +55,15 @@ export function setActiveRoute(route: Route): void {
 }
 
 export function isRouteUnlocked(route: Route): boolean {
-  if (route === 'main' || route === 'jixiu' || route === 'ruoyu') return true;
+  if (route === 'jixiu' || route === 'ruoyu') return true;
 
   // Check overall progress
-  const allRoutes: Route[] = ['main', 'jixiu', 'ruoyu', 'yunling', 'chengyuan'];
+  const allRoutes: Route[] = ['jixiu', 'ruoyu', 'yunling', 'chengyuan'];
   let totalReadCount = 0;
-  let mainReadCount = 0;
 
   for (const r of allRoutes) {
     const prog = getRouteProgress(r);
     if (prog) {
-      if (r === 'main') {
-        mainReadCount = prog.readChapters.length;
-      }
       totalReadCount = Math.max(totalReadCount, prog.readChapters.length);
     }
   }
@@ -77,7 +72,8 @@ export function isRouteUnlocked(route: Route): boolean {
     return totalReadCount >= 3;
   }
   if (route === 'chengyuan') {
-    return mainReadCount >= 8;
+    // 假设读完修杰或若雨一定数量章节解锁老爷子
+    return totalReadCount >= 8;
   }
 
   return false;
@@ -90,3 +86,18 @@ export function getFontSize(): FontSize {
 export function setFontSize(size: FontSize): void {
   localStorage.setItem(`${PREFIX}reader-fontsize`, size);
 }
+
+export const progressService = {
+  getRouteProgress,
+  markChapterRead,
+  getActiveRoute,
+  setActiveRoute,
+  isRouteUnlocked,
+  getFontSize,
+  setFontSize,
+  clearAll() {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith(PREFIX))
+      .forEach(k => localStorage.removeItem(k));
+  },
+};
