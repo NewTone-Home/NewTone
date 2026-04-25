@@ -3,7 +3,7 @@ import { NovelWorld } from './types';
 export const INITIAL_WORLDS: NovelWorld[] = [
   {
     id: 'w-1',
-    name: { zh: '初墨卷', en: 'First Ink Scroll', ja: '初墨巻' },
+    name: { zh: '苍穹剑界', en: 'Sky Sword Realm', ja: '蒼穹剣界' },
     genre: { zh: '东方玄幻', en: 'Eastern Fantasy', ja: '東洋ファンタジー' },
     shortDescription: { 
       zh: '一剑破星辰，万界尊剑道。', 
@@ -36,7 +36,7 @@ export const INITIAL_WORLDS: NovelWorld[] = [
   },
   {
     id: 'w-2',
-    name: { zh: '待启之卷 · 二', en: 'Unopened Scroll · II', ja: '未開封の巻 · 二' },
+    name: { zh: '霓虹深渊', en: 'Neon Abyss', ja: 'ネオン・アビス' },
     genre: { zh: '赛博朋克', en: 'Cyberpunk', ja: 'サイバーパンク' },
     shortDescription: { 
       zh: '在永不停止降雨的超级都市中，寻找真实的自我。', 
@@ -59,7 +59,7 @@ export const INITIAL_WORLDS: NovelWorld[] = [
   },
   {
     id: 'w-3',
-    name: { zh: '待启之卷 · 三', en: 'Unopened Scroll · III', ja: '未開封の巻 · 三' },
+    name: { zh: '荒原余烬', en: 'Wasteland Embers', ja: '荒野の残り火' },
     genre: { zh: '末世废土', en: 'Post-Apocalyptic', ja: 'ポスト・アポカリプス' },
     shortDescription: { 
       zh: '文明毁灭后的荒原，唯有意志永存。', 
@@ -82,7 +82,7 @@ export const INITIAL_WORLDS: NovelWorld[] = [
   },
   {
     id: 'w-4',
-    name: { zh: '待启之卷 · 四', en: 'Unopened Scroll · IV', ja: '未開封の巻 · 四' },
+    name: { zh: '奥术之巅', en: 'Arcane Pinnacle', ja: '秘術の頂点' },
     genre: { zh: '奇幻魔法', en: 'Fantasy Magic', ja: 'ファンタジー魔法' },
     shortDescription: { 
       zh: '在真理的尽头，魔法与神迹并存。', 
