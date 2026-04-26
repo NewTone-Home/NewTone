@@ -91,6 +91,17 @@ export function WorldsChumo() {
   const currentChapter = params.chapter ? Number(params.chapter) : 1;
 
   const [isReading, setIsReading] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleExitReading = () => {
+    setIsClosing(true);
+    // 700ms 动画结束后彻底清理状态
+    setTimeout(() => {
+      setIsReading(false);
+      setIsClosing(false);
+      navigate('/worlds/chumo');
+    }, 700);
+  };
 
   // 切换路线或回 L1 时自动退出阅读态
   useEffect(() => { setIsReading(false) }, [selectedRoute]);
@@ -114,17 +125,16 @@ export function WorldsChumo() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isReading) {
-          setIsReading(false);
-          navigate('/worlds/chumo');
-        } else if (selectedRoute) {
+        if (isReading && !isClosing) {
+          handleExitReading();
+        } else if (selectedRoute && !isClosing) {
           navigate('/worlds/chumo');
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isReading, selectedRoute, navigate]);
+  }, [isReading, isClosing, selectedRoute, navigate]);
 
   return (
     <div className="chumo-page">
@@ -135,20 +145,22 @@ export function WorldsChumo() {
           data={CHARACTERS[0]} 
           active={selectedRoute === 'jixiu'} 
           reading={isReading && selectedRoute === 'jixiu'}
+          isClosing={isClosing && selectedRoute === 'jixiu'}
           currentChapter={currentChapter}
           onSelect={() => handleSelect('jixiu')}
           onStartReading={() => setIsReading(true)}
-          onExitReading={() => { setIsReading(false); navigate('/worlds/chumo'); }}
+          onExitReading={handleExitReading}
           onChapterSelect={(n) => navigate(`/read/jixiu/${n}`)}
         />
         <CharacterCard 
           data={CHARACTERS[1]} 
           active={selectedRoute === 'ruoyu'} 
           reading={isReading && selectedRoute === 'ruoyu'}
+          isClosing={isClosing && selectedRoute === 'ruoyu'}
           currentChapter={currentChapter}
           onSelect={() => handleSelect('ruoyu')}
           onStartReading={() => setIsReading(true)}
-          onExitReading={() => { setIsReading(false); navigate('/worlds/chumo'); }}
+          onExitReading={handleExitReading}
           onChapterSelect={(n) => navigate(`/read/ruoyu/${n}`)}
         />
         <CharacterCard 
@@ -156,10 +168,11 @@ export function WorldsChumo() {
           locked={!isRouteUnlocked('yunling')} 
           active={selectedRoute === 'yunling'} 
           reading={isReading && selectedRoute === 'yunling'}
+          isClosing={isClosing && selectedRoute === 'yunling'}
           currentChapter={currentChapter}
           onSelect={() => handleSelect('yunling')}
           onStartReading={() => setIsReading(true)}
-          onExitReading={() => { setIsReading(false); navigate('/worlds/chumo'); }}
+          onExitReading={handleExitReading}
           onChapterSelect={(n) => navigate(`/read/yunling/${n}`)}
         />
         <CharacterCard 
@@ -167,10 +180,11 @@ export function WorldsChumo() {
           locked={!isRouteUnlocked('chengyuan')} 
           active={selectedRoute === 'chengyuan'} 
           reading={isReading && selectedRoute === 'chengyuan'}
+          isClosing={isClosing && selectedRoute === 'chengyuan'}
           currentChapter={currentChapter}
           onSelect={() => handleSelect('chengyuan')}
           onStartReading={() => setIsReading(true)}
-          onExitReading={() => { setIsReading(false); navigate('/worlds/chumo'); }}
+          onExitReading={handleExitReading}
           onChapterSelect={(n) => navigate(`/read/chengyuan/${n}`)}
         />
       </div>

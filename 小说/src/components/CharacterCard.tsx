@@ -17,6 +17,7 @@ export interface CharacterCardProps {
   locked?: boolean;
   active?: boolean;
   reading?: boolean;
+  isClosing?: boolean;
   currentChapter?: number;
   onSelect?: () => void;
   onStartReading?: () => void;
@@ -29,6 +30,7 @@ export function CharacterCard({
   locked, 
   active, 
   reading,
+  isClosing,
   currentChapter, 
   onSelect,
   onStartReading,
@@ -61,7 +63,8 @@ export function CharacterCard({
       className="card"
       data-locked={locked || undefined}
       data-active={active || undefined}
-      data-reading={reading || undefined}
+      data-reading={(reading || isClosing) || undefined}
+      data-closing={isClosing || undefined}
       style={{ '--char-color': data.colorHex, position: 'relative' } as React.CSSProperties}
       onClick={() => {
         onSelect?.()
@@ -143,15 +146,15 @@ export function CharacterCard({
 
       {/* === 内容层 (通过 AnimatePresence 实现丝滑切换) === */}
       <AnimatePresence mode="wait">
-        {active && !locked && (
+        {(active || isClosing) && !locked && (
           <motion.div 
             key="detail"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98 }}
+            exit={isClosing ? { opacity: 1 } : { opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
             className="card-detail" 
-            data-reading={reading}
+            data-reading={reading || isClosing}
           >
             <div className={`cd-header cd-header-full ${reading ? 'cd-header-collapsed' : ''}`}>
               <div className="dt-header">
@@ -210,6 +213,7 @@ export function CharacterCard({
                     route={data.id}
                     currentChapter={currentChapter ?? 1}
                     charColor={data.colorHex}
+                    isClosing={isClosing}
                     onAdvance={(n) => onChapterSelect?.(n)}
                   />
 
@@ -252,7 +256,6 @@ export function CharacterCard({
         <div className="card-detail locked-detail" style={active ? { animation: 'none' } : {}}>
           {active && !reading && (
             <>
-              {data?.seal && <GlitchText text={data.seal.kanji} />}
               <div 
                 className="dt-red-stamp" 
                 style={{ 
@@ -279,7 +282,6 @@ export function CharacterCard({
               >
                 {data?.seal?.kanji}
               </div>
-              <div className="dt-unlock-hint">{data?.unlockHint?.[lang]}</div>
               <div className="dt-paper-lines" />
             </>
           )}

@@ -515,6 +515,43 @@
 }
 @keyframes scanflicker { from { opacity: 0.5; } to { opacity: 0.8; } }
 
+/*阅读态关闭 L3->L1 */
+.card[data-closing="true"] { 
+  flex: 1 1 100% !important; /* 首先锁住 L3 的宽度 */
+  animation: cardCollapseToL1 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+.card[data-closing="true"] .card-detail {
+  opacity: 1; /* 保持显示，直到动画完成 */
+  pointer-events: none;
+}
+
+.chapter-body.is-closing {
+  animation: chapterFadeOut 0.3s ease-in forwards;
+}
+
+.card[data-closing="true"] .cd-header-compact,
+.card[data-closing="true"] .back-to-letter,
+.card[data-closing="true"] .zp-annotations,
+.card[data-closing="true"] .chapter-nav,
+.card[data-closing="true"] .dt-progress-line,
+.card[data-closing="true"] .cb-coin-wrap,
+.card[data-closing="true"] .dt-anchor {
+  animation: chapterFadeOut 0.3s ease-in forwards;
+}
+
+@keyframes chapterFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(12px); }
+}
+
+@keyframes cardCollapseToL1 {
+  0% { flex: 1 1 100%; }
+  30% { flex: 1 1 100%; } /* 给正文淡出留时间 */
+  100% { flex: 1; } /* 回到 L1 尺寸（或者 0.2 如果有 active，但这里是全局切回 L1） */
+}
+
 @media (max-width: 768px) {
   .card-row { flex-direction: column; height: auto; min-height: 100vh; }
   .card { flex: none; height: 20vh; border-right: none; border-bottom: 1px solid rgba(139,111,62,0.18); }

@@ -10,12 +10,13 @@ type Props = {
   route: Route
   currentChapter: number
   charColor: string
+  isClosing?: boolean
   onAdvance: (nextChapter: number) => void
 }
 
 const cnNum = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 
-export function ChapterBody({ route, currentChapter, charColor, onAdvance }: Props) {
+export function ChapterBody({ route, currentChapter, charColor, isClosing, onAdvance }: Props) {
   const { fontSize } = useTheme()
 
   const chapterData = loadChapter(route, currentChapter)
@@ -48,7 +49,7 @@ export function ChapterBody({ route, currentChapter, charColor, onAdvance }: Pro
 
   return (
     <div 
-      className="chapter-body"
+      className={`chapter-body ${isClosing ? 'is-closing' : ''}`}
       style={{ '--reader-font-size': fontSizeMap[fontSize] } as React.CSSProperties}
     >
       <div className="markdown-body">
