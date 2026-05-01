@@ -21,6 +21,18 @@
   --brass: #8B6F3E;
   --seal-red: #8B2F28;
   --parchment-shadow: rgba(139, 111, 62, 0.15);
+
+  /* Library Fix-F+G */
+  --lib-text-primary:  #1A2632;
+  --lib-text-secondary:#4A5868;
+  --lib-text-tertiary: #8896A4;
+  --lib-active:        #1A2632;
+  --lib-locked:        #8896A4;
+  --lib-glow-rgb:      60, 100, 140;
+  --lib-glow-strong:   0.15;
+  --lib-glow-soft:     0.08;
+  --lib-trail:         #8896A4;
+  --lib-trail-bright:  #4A5868;
 }
 
 [data-theme="night"] {
@@ -31,6 +43,18 @@
   --brass: #B8935A;
   --seal-red: #7A2B25;
   --parchment-shadow: rgba(184, 147, 90, 0.2);
+
+  /* Library Fix-F+G */
+  --lib-text-primary:  #E8F4FF;
+  --lib-text-secondary:#6E8AA0;
+  --lib-text-tertiary: #4A6478;
+  --lib-active:        #E8F4FF;
+  --lib-locked:        #4A6478;
+  --lib-glow-rgb:      180, 220, 255;
+  --lib-glow-strong:   0.35;
+  --lib-glow-soft:     0.18;
+  --lib-trail:         #4A6478;
+  --lib-trail-bright:  #B8CDE0;
 }
 
 .chumo-page { position: relative; }

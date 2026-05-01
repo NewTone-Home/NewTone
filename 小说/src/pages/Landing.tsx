@@ -34,7 +34,7 @@ export const Landing = () => {
   const { lang } = useLang();
 
   return (
-    <div className="min-h-screen relative bg-[var(--bg)] transition-colors duration-500 flex flex-col items-center justify-center overflow-hidden">
+    <div className="home-page min-h-screen relative flex flex-col items-center justify-center overflow-hidden">
       <GlobalHeader />
 
       {/* Hero Section */}
@@ -44,7 +44,7 @@ export const Landing = () => {
           className="landing-animate-fade-up"
           style={{ animationDelay: '0.0s' }}
         >
-          <span className="font-display text-[14px] tracking-[0.3em] uppercase text-[var(--brass)]">
+          <span className="volume-tag font-display text-[14px] tracking-[0.3em] uppercase">
             {i18n.volumeLabel[lang]}
           </span>
         </div>
@@ -54,7 +54,7 @@ export const Landing = () => {
           className="mt-4 landing-animate-fade-up"
           style={{ animationDelay: '0.3s' }}
         >
-          <h1 className="font-display text-[clamp(64px,12vw,140px)] leading-none tracking-[0.08em] font-normal text-[var(--ink)]">
+          <h1 className="newtone-title font-display text-[clamp(64px,12vw,140px)] leading-none tracking-[0.08em] font-normal">
             NEWTONE
           </h1>
         </div>
@@ -64,7 +64,7 @@ export const Landing = () => {
           className="mt-8 max-w-[600px] landing-animate-fade-up"
           style={{ animationDelay: '0.9s' }}
         >
-          <p className="font-body text-[20px] italic text-[var(--ink)] opacity-75">
+          <p className="tagline font-body text-[20px] italic">
             {i18n.tagline[lang]}
           </p>
         </div>
@@ -76,14 +76,14 @@ export const Landing = () => {
         >
           <button
             onClick={() => navigate('/library')}
-            className="px-8 py-[14px] border border-[var(--brass)] bg-transparent text-[var(--ink)] font-display text-[14px] tracking-[0.2em] uppercase transition-all duration-300 hover:bg-[var(--brass)] hover:text-[var(--bg)] rounded-[2px]"
+            className="btn-enter px-8 py-[14px] font-display text-[14px] tracking-[0.2em] uppercase rounded-[2px]"
           >
             {i18n.ctaPrimary[lang]}
           </button>
           
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-2 py-[14px] bg-transparent border-none border-b border-dashed border-[var(--brass)] text-[var(--brass)] font-display text-[14px] tracking-[0.2em] uppercase transition-all duration-300 hover:border-solid"
+            className="btn-subscribe px-2 py-[14px] bg-transparent border-none font-display text-[14px] tracking-[0.2em] uppercase transition-all duration-300"
           >
             {i18n.ctaSecondary[lang]}
           </button>
@@ -91,10 +91,10 @@ export const Landing = () => {
       </div>
 
       {/* Footer Decoration */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-30 flex gap-4 pointer-events-none">
-        <span className="text-xl">✦</span>
-        <span className="text-xl">✦</span>
-        <span className="text-xl">✦</span>
+      <div className="dots-bottom absolute bottom-12 left-1/2 -translate-x-1/2 opacity-30 flex gap-4 pointer-events-none">
+        <span className="text-xl">◆</span>
+        <span className="text-xl">◆</span>
+        <span className="text-xl">◆</span>
       </div>
 
       {/* Subscription Modal */}
