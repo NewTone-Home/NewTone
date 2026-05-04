@@ -5,6 +5,7 @@ import { GlobalHeader } from '../components/GlobalHeader';
 import { useLang } from '../contexts/ThemeContext';
 import { UI_TRANSLATIONS } from '../locales';
 import { ScrambleText } from '../components/ScrambleText';
+import { useTransition } from '../App';
 
 function VoidPaperBg() {
   return (
@@ -39,7 +40,7 @@ function VoidPaperBg() {
 
 function LightFieldBg() {
   return (
-    <svg className="lib-light-bg" preserveAspectRatio="xMidYMid slice"
+    <svg className="lib-bg-light" preserveAspectRatio="xMidYMid slice"
       viewBox="0 0 1600 1000">
       <defs>
         <radialGradient id="lib-orb-cool" cx="50%" cy="50%" r="50%">
@@ -170,6 +171,7 @@ function InkTrailRealtime() {
 
 export const Library: React.FC = () => {
   const navigate = useNavigate();
+  const { triggerTransition } = useTransition();
   const [entered, setEntered] = useState(false);
   const { lang } = useLang();
 
@@ -230,7 +232,7 @@ export const Library: React.FC = () => {
       z: 4,
       locked: false,
       coords: "35.2500° N / 122.7167° E",
-      onClick: () => navigate('/worlds/chumo'),
+      onClick: () => triggerTransition('/worlds/chumo', '推开院门'),
     },
     {
       id: 'volume-2',

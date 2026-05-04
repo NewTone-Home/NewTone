@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { useLang } from '../contexts/ThemeContext';
 import { GlobalHeader } from '../components/GlobalHeader';
-import { SubscribeModal } from '../components/SubscribeModal';
+import { ScrambleText } from '../components/ScrambleText';
+import { useTransition } from '../App';
 
 const i18n = {
   volumeLabel: {
@@ -19,18 +18,17 @@ const i18n = {
   ctaPrimary: {
     zh: '进入地图 →',
     en: 'ENTER THE ATLAS →',
-    ja: '地図へ →',
+    ja: '地图へ →',
   },
-  ctaSecondary: {
-    zh: '订阅更新',
-    en: 'SUBSCRIBE',
-    ja: '更新を受け取る',
+  loading: {
+    zh: '翻阅卷宗中',
+    en: 'Reading Dossier',
+    ja: '巻物を閲覧中',
   },
 }
 
 export const Landing = () => {
-  const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { triggerTransition } = useTransition();
   const { lang } = useLang();
 
   return (
@@ -44,9 +42,10 @@ export const Landing = () => {
           className="landing-animate-fade-up"
           style={{ animationDelay: '0.0s' }}
         >
-          <span className="volume-tag font-display text-[14px] tracking-[0.3em] uppercase">
-            {i18n.volumeLabel[lang]}
-          </span>
+          <ScrambleText 
+            className="volume-tag font-display text-[14px] tracking-[0.3em] uppercase" 
+            text={i18n.volumeLabel[lang]} 
+          />
         </div>
 
         {/* Brand Name */}
@@ -55,7 +54,7 @@ export const Landing = () => {
           style={{ animationDelay: '0.3s' }}
         >
           <h1 className="newtone-title font-display text-[clamp(64px,12vw,140px)] leading-none tracking-[0.08em] font-normal">
-            NEWTONE
+            <ScrambleText text="NEWTONE" />
           </h1>
         </div>
 
@@ -65,27 +64,20 @@ export const Landing = () => {
           style={{ animationDelay: '0.9s' }}
         >
           <p className="tagline font-body text-[20px] italic">
-            {i18n.tagline[lang]}
+            <ScrambleText text={i18n.tagline[lang]} />
           </p>
         </div>
 
         {/* CTA Buttons */}
         <div 
-          className="mt-12 flex items-center gap-6 landing-animate-fade-up"
+          className="mt-12 flex items-center justify-center landing-animate-fade-up"
           style={{ animationDelay: '1.3s' }}
         >
           <button
-            onClick={() => navigate('/library')}
+            onClick={() => triggerTransition('/library')}
             className="btn-enter px-8 py-[14px] font-display text-[14px] tracking-[0.2em] uppercase rounded-[2px]"
           >
-            {i18n.ctaPrimary[lang]}
-          </button>
-          
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="btn-subscribe px-2 py-[14px] bg-transparent border-none font-display text-[14px] tracking-[0.2em] uppercase transition-all duration-300"
-          >
-            {i18n.ctaSecondary[lang]}
+            <ScrambleText text={i18n.ctaPrimary[lang]} />
           </button>
         </div>
       </div>
@@ -96,9 +88,6 @@ export const Landing = () => {
         <span className="text-xl">◆</span>
         <span className="text-xl">◆</span>
       </div>
-
-      {/* Subscription Modal */}
-      <SubscribeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
       <style>{`
         @keyframes fadeUp {
@@ -121,6 +110,38 @@ export const Landing = () => {
         }
         .landing-animate-fade-up:nth-child(4) {
           animation-duration: 0.6s;
+        }
+
+        .home-page .btn-enter {
+          border: 1px solid var(--ink, #2E2418) !important;
+          background: transparent !important;
+          color: var(--ink, #2E2418) !important;
+          position: relative !important;
+          overflow: hidden !important;
+          z-index: 0;
+          transition: color 350ms ease, transform 250ms ease, box-shadow 300ms ease, letter-spacing 300ms ease !important;
+        }
+        .home-page .btn-enter::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: var(--ink, #2E2418);
+          transform: translateY(101%);
+          transition: transform 450ms cubic-bezier(0.65, 0, 0.35, 1);
+          z-index: -1;
+        }
+        .home-page .btn-enter:hover {
+          color: var(--bg, #EDE2C4) !important;
+          letter-spacing: 0.28em !important;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(46, 36, 24, 0.18);
+        }
+        .home-page .btn-enter:hover::before {
+          transform: translateY(0);
+        }
+        .home-page .btn-enter:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 6px rgba(46, 36, 24, 0.14);
         }
       `}</style>
     </div>

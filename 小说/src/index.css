@@ -818,35 +818,29 @@
 .lib-void-paper-base,
 .lib-void-paper-noise,
 .lib-void-paper-vignette {
-  -webkit-mask-image: linear-gradient(225deg,
-    black 0%,
-    black calc(var(--lib-reveal-dark) - 18%),
-    transparent var(--lib-reveal-dark),
-    transparent 100%);
-  mask-image: linear-gradient(225deg,
-    black 0%,
-    black calc(var(--lib-reveal-dark) - 18%),
-    transparent var(--lib-reveal-dark),
-    transparent 100%);
-  will-change: mask-image;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  transition: opacity 600ms ease !important;
 }
+.lib-void-paper-base     { opacity: 0; }
+.lib-void-paper-noise    { opacity: 0; }
+.lib-void-paper-vignette { opacity: 0; }
 
-.lib-light-bg {
+[data-theme="night"] .lib-void-paper-base     { opacity: 1; }
+[data-theme="night"] .lib-void-paper-noise    { opacity: 0.35; }
+[data-theme="night"] .lib-void-paper-vignette { opacity: 1; }
+
+.lib-bg-light {
   position: absolute; inset: 0; z-index: 1;
   pointer-events: none; width: 100%; height: 100%;
   color: var(--lib-text-tertiary);
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  transition: opacity 600ms ease !important;
   opacity: 1;
-  -webkit-mask-image: linear-gradient(225deg,
-    black 0%,
-    black calc(var(--lib-reveal-light) - 18%),
-    transparent var(--lib-reveal-light),
-    transparent 100%);
-  mask-image: linear-gradient(225deg,
-    black 0%,
-    black calc(var(--lib-reveal-light) - 18%),
-    transparent var(--lib-reveal-light),
-    transparent 100%);
-  will-change: mask-image;
+}
+[data-theme="night"] .lib-bg-light {
+  opacity: 0;
 }
 
 /* UI Elements Fade-in */
@@ -1007,27 +1001,22 @@
 .library-page {
   position: relative;
   overflow: hidden;
-  background: #0B0F14;
-  --lib-reveal-dark: -18%;
-  --lib-reveal-light: 130%;
-  transition:
-    --lib-reveal-dark 1200ms cubic-bezier(0.65, 0, 0.35, 1),
-    --lib-reveal-light 1200ms cubic-bezier(0.65, 0, 0.35, 1),
-    color 500ms ease;
+  background: var(--lib-bg-base) !important;
+  transition: background 600ms ease, color 500ms ease !important;
+  --lib-bg-base: #F4F4F2;
 }
 
-[data-theme="night"] .library-page,
-.night .library-page {
-  --lib-reveal-dark: 130%;
-  --lib-reveal-light: -18%;
+[data-theme="night"] .library-page {
+  --lib-bg-base: #0B0F14;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .library-page {
-    transition:
-      --lib-reveal-dark 0ms,
-      --lib-reveal-light 0ms,
-      color 500ms ease;
+  .library-page,
+  .lib-void-paper-base,
+  .lib-void-paper-noise,
+  .lib-void-paper-vignette,
+  .lib-bg-light {
+    transition: none !important;
   }
 }
 
@@ -1035,23 +1024,6 @@
   position: absolute; inset: 0; z-index: 0;
   pointer-events: none;
   opacity: 1;
-}
-
-.lib-bg-light {
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 45%, #F8F7F4 0%, #E8E9E6 70%),
-    #F4F4F2;
-  -webkit-mask-image: linear-gradient(225deg,
-    black 0%,
-    black calc(var(--lib-reveal-light) - 18%),
-    transparent var(--lib-reveal-light),
-    transparent 100%);
-  mask-image: linear-gradient(225deg,
-    black 0%,
-    black calc(var(--lib-reveal-light) - 18%),
-    transparent var(--lib-reveal-light),
-    transparent 100%);
-  will-change: mask-image;
 }
 
 .lib-void-base   { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -1583,10 +1555,16 @@
   width: 64px;
   height: 30px;
   border-radius: 15px;
-  background: rgba(139, 111, 62, 0.12);
-  border: 1px solid rgba(139, 111, 62, 0.3);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 32%, transparent);
   cursor: pointer;
   overflow: visible;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.theme-pill-group:hover .yinyang-pill {
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 48%, transparent);
 }
 
 .pill-taiji-bg {
@@ -1614,8 +1592,8 @@
   height: 22px;
   border-radius: 50%;
   background: var(--bg);
-  border: 1px solid var(--brass);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  border: 1px solid var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   color: var(--ink);
   font-family: 'Noto Serif SC', serif;
   font-size: 11px;
@@ -1635,6 +1613,11 @@
 
 .pill-slider.pos-theme { left: 3px; }
 .pill-slider.pos-lang  { left: calc(100% - 25px); }
+
+.theme-pill-group:hover .pill-slider:not(.dropped) {
+  border-color: var(--brass);
+  box-shadow: 0 1px 4px rgba(139, 111, 62, 0.28);
+}
 
 .pill-slider.dropped {
   top: 42px;
@@ -1681,7 +1664,7 @@
 }
 .header-option:hover {
   opacity: 1;
-  color: var(--char-color);
+  color: var(--char-color, var(--brass));
 }
 
 .slider-icon {
@@ -1861,4 +1844,117 @@
   opacity: 0.3;
   font-size: 0.6em;
 }
+
+@keyframes libraryPageReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.library-page {
+  animation: libraryPageReveal 400ms ease-out forwards;
+}
+
+/* === Page transition overlay === */
+.app-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: #F4F4F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  pointer-events: auto;
+  opacity: 0;
+}
+[data-theme="night"] .app-transition-overlay {
+  background: #0B0F14;
+}
+.app-transition-overlay.is-show {
+  animation: appTransitionShow 500ms ease forwards;
+}
+.app-transition-overlay.is-hide {
+  animation: appTransitionHide 600ms ease forwards;
+}
+@keyframes appTransitionShow {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes appTransitionHide {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* 四角铜色装饰 */
+.app-transition-corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #8B6F3E;
+  opacity: 0.55;
+}
+[data-theme="night"] .app-transition-corner { border-color: #B8935A; opacity: 0.4; }
+.app-transition-corner.tl { top: 36px; left: 36px; border-right: none; border-bottom: none; }
+.app-transition-corner.tr { top: 36px; right: 36px; border-left: none; border-bottom: none; }
+.app-transition-corner.bl { bottom: 36px; left: 36px; border-right: none; border-top: none; }
+.app-transition-corner.br { bottom: 36px; right: 36px; border-left: none; border-top: none; }
+
+/* 居中卡片 */
+.app-transition-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* 顶部装饰：◆ ─── ◇ ─── ◆ */
+.app-transition-ornament {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #8B6F3E;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+}
+[data-theme="night"] .app-transition-ornament { color: #B8935A; opacity: 0.55; }
+.app-transition-ornament-line {
+  width: 36px;
+  height: 1px;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* 主文字 */
+.app-transition-text {
+  color: #2E2418;
+  font-family: 'IM Fell English', 'Noto Serif SC', serif;
+  font-size: 22px;
+  letter-spacing: 0.32em;
+  font-style: italic;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+}
+[data-theme="night"] .app-transition-text { color: #E8E4DC; }
+
+/* 三点呼吸 */
+.app-transition-dot {
+  display: inline-block;
+  opacity: 0.2;
+  animation: appTransitionDot 0.8s ease-in-out infinite;
+}
+.app-transition-dot:nth-child(2) { animation-delay: 0.15s; }
+.app-transition-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes appTransitionDot {
+  0%, 60%, 100% { opacity: 0.2; }
+  30% { opacity: 1; }
+}
+
+/* 底部细铜线 */
+.app-transition-rule {
+  width: 120px;
+  height: 1px;
+  background: #8B6F3E;
+  opacity: 0.4;
+}
+[data-theme="night"] .app-transition-rule { background: #B8935A; opacity: 0.3; }
 
