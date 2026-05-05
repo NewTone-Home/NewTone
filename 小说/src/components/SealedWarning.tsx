@@ -1,6 +1,22 @@
 import React from 'react';
+import { ScrambleText } from './ScrambleText';
+import { useTheme } from '../contexts/ThemeContext';
 
-const SealedWarning: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+const SealedWarning: React.FC<{ unlockHint?: any; onBack: () => void }> = ({ unlockHint, onBack }) => {
+  const { lang } = useTheme();
+  
+  const sealText = {
+    zh: '此 · 卷 · 封 · 缄',
+    en: 'V O L U M E · S E A L E D',
+    ja: '此 · 巻 · 封 · 緘'
+  };
+
+  const defaultWarning = {
+    zh: '缄者，慎言也。时机未至，此卷不可阅。',
+    en: 'Sealed. The time has not yet come. This volume remains closed.',
+    ja: '緘者、慎言なり。時至らざれば、此の巻は閲覧能わず。'
+  };
+
   return (
     <div 
       className="sealed-warning-container"
@@ -126,10 +142,12 @@ const SealedWarning: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </svg>
       </div>
 
-      <div className="seal-text">此·卷·封·缄</div>
+      <div className="seal-text">
+        <ScrambleText text={sealText[lang]} />
+      </div>
       
       <div className="warning-sub">
-        缄者，慎言也。时机未至，此卷不可阅。
+        <ScrambleText text={unlockHint?.[lang] || defaultWarning[lang]} />
       </div>
     </div>
   );

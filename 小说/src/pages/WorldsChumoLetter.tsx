@@ -7,8 +7,8 @@ import { Language } from '../types';
 
 const characterRoutes = [
   { id: 'jixiujie', romanIndex: 'I', key: '1',
-    name: { zh: '修 杰', en: 'JI XIUJIE', ja: '修 杰' },
-    epithet: { zh: '札', en: 'SCROLL', ja: '札' },
+    name: { zh: '姬 修 杰', en: null, ja: '姬 修 杰' },
+    epithet: { zh: '札', en: 'LETTER', ja: '札' },
     colorLabel: { zh: '青白', en: 'QINGBAI', ja: '青白' },
     locked: false, unlockChapter: 0,
     dataKey: 'jixiujie' },
@@ -35,22 +35,19 @@ const characterRoutes = [
 const letterData: Record<string, any> = {
   jixiujie: {
     quote: {
-      zh: '「青石狮子咧开嘴，我听见名字被念出。」',
-      en: '"The stone lion parted its jaws; I heard my name spoken."',
-      ja: '「石の獅子が口を開き、吾の名が呼ばれるを聞けり。」' },
+      zh: '「我不在棋盘外，我只是还没看见自己脚下的格子。」',
+      en: '"I\'m not outside the board. I just haven\'t seen the square beneath my feet yet."',
+      ja: '「私は盤の外にいるのではない。ただ、自分の足元の格がまだ見えていないだけだ。」' },
     excerpt: {
-      zh: ['祖宅的夜，安静得像一口古井。',
+      zh: ['姬家的夜，安静得像一口古井。',
            '我背着包从车站走回来，脚下的石板上还留着白日的余温。',
-           '门推开时，铜环轻响——爷爷不在。',
-           '只有那只我从小记忆里的青石狮子，盘踞在门旁。'],
-      en: ['The night of the ancestral house was quiet as an old well.',
+           '门推开时，铜环轻响——爷爷不在。'],
+      en: ['The night of the Ji house was quiet as an old well.',
            'I walked back from the station with my pack, the stone slabs still warm from the day.',
-           'The door opened with a bronze ring — Grandfather was not there.',
-           'Only the stone lion I had known since childhood crouched by the gate.'],
-      ja: ['祖宅の夜は、古井の如く静けし。',
-           '駅より背に荷を負いて帰る、石板になお日中の温もり残る。',
-           '扉を開くと銅環軽く鸣る——祖父はおらず。',
-           '幼き頃より记忆にある青石の獅子のみ、門傍に蹲る。'] },
+           'The door opened with a bronze ring — Grandfather was not there.'],
+      ja: ['姫家の夜は、古井の如く静けし。',
+           '駅より背に荷を负いて帰る、石板になお日中の温もり残る。',
+           '扉を開くと銅環軽く鸣る——祖父はおらず。'] },
     storyRoute: '/read/jixiujie',
   },
   sunruoyu: {

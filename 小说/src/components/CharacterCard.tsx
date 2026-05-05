@@ -9,8 +9,15 @@ import { ChapterBody } from './ChapterBody';
 import { ZhupiAnnotations } from './ZhupiAnnotations';
 import SealedWarning from './SealedWarning';
 import { CoinButton } from './CoinButton';
-import { getRouteProgress, getTotalChaptersForRoute, markChapterRead } from '../services/progressService';
+import { listChapters } from '../services/chapterLoader';
+import { getRouteProgress, getTotalChaptersForRoute, markChapterRead as markChapterReadLegacy } from '../services/progressService';
 import { Route } from '../types';
+import { useReadingProgress } from '../hooks/useReadingProgress';
+import { JIXIU_CH_METADATA } from '../data';
+
+import { ScrambleText } from './ScrambleText';
+
+import { FadeText } from './FadeText';
 
 export interface CharacterCardProps {
   data: any;
@@ -31,7 +38,7 @@ export function CharacterCard({
   active, 
   reading,
   isClosing,
-  currentChapter, 
+  currentChapter: currentChapterProp, 
   onSelect,
   onStartReading,
   onExitReading,
@@ -39,6 +46,97 @@ export function CharacterCard({
 }: CharacterCardProps) {
   const navigate = useNavigate();
   const { lang } = useTheme();
+  
+  const currentChapter = currentChapterProp ?? 1;
+  const { progress, markRead } = useReadingProgress(data.id as Route);
+  const chapters = React.useMemo(() => listChapters(data.id as Route), [data.id]);
+  const totalChapters = chapters.length;
+
+  console.log(`[CharacterCard] Render: ${data.id}, progress=${progress}, current=${currentChapter}, total=${totalChapters}`);
+
+  // URL Protection for jixiu
+  React.useEffect(() => {
+    if (active && reading && data.id === 'jixiu') {
+      if (currentChapter > progress + 1) {
+        console.log(`[Card] Redirecting from ch${currentChapter} to ch${progress + 1}`);
+        navigate(`/read/${data.id}/${progress + 1}`, { replace: true });
+        onChapterSelect?.(progress + 1);
+      }
+    }
+  }, [active, reading, data.id, currentChapter, progress, navigate, onChapterSelect]);
+
+  // Meta data computing for jixiu
+  const dynamicMeta = React.useMemo(() => {
+    if (data.id !== 'jixiu') return data.metadata;
+    
+    // 见
+    const appearsMap: Record<number, any> = {
+      0: { zh: '见·第一章', en: 'Ch.1', ja: '第一章' },
+      1: { zh: '见·第一章', en: 'Ch.1', ja: '第一章' }, // If they haven't finished ch1, they are reading ch1
+    };
+    
+    // N is the number of chapters COMPLETE.
+    const currentUnlockedIndex = Math.min(progress + 1, totalChapters);
+    const zhNums = ['', '一', '二', '三', '四', '五', '六', '七', '八'];
+    
+    const appearsInfo = {
+      zh: `见·第${zhNums[currentUnlockedIndex]}章`,
+      en: `Ch.${currentUnlockedIndex}`,
+      ja: `第${zhNums[currentUnlockedIndex]}章`
+    };
+    
+    // 字
+    const wordSum = JIXIU_CH_METADATA.slice(0, progress + 1).reduce((acc, ch) => acc + ch.words, 0);
+    
+    const sumsMap: Record<number, any> = {
+      1150: { zh: '一千一百', en: '1,100', ja: '千百' },
+      1850: { zh: '一千八百', en: '1,800', ja: '千八百' },
+      3550: { zh: '三千五百', en: '3,550', ja: '三千五百' },
+    };
+    const s = sumsMap[wordSum] || { zh: wordSum.toString(), en: wordSum.toLocaleString(), ja: wordSum.toString() };
+
+    const wordsInfo = {
+      zh: `字·约${s.zh}`,
+      en: `~${s.en} words`,
+      ja: `約${s.ja}字`
+    };
+
+    return {
+      ...data.metadata,
+      appears: appearsInfo,
+      words: wordsInfo
+    };
+  }, [data.id, data.metadata, progress, totalChapters]);
+
+  const showCoin = data.id === 'jixiu' 
+    ? (progress >= currentChapter && currentChapter < totalChapters)
+    : true; // Keep old behavior for others
+
+  const initialShowCoin = React.useRef(showCoin);
+
+  const isJixiuDetail = active && data.id === 'jixiu';
+  
+  const [isLangTransitioning, setIsLangTransitioning] = React.useState(false);
+  const prevLang = React.useRef(lang);
+
+  React.useEffect(() => {
+    if (isJixiuDetail && prevLang.current !== lang) {
+      setIsLangTransitioning(true);
+      const timer = setTimeout(() => {
+        setIsLangTransitioning(false);
+        prevLang.current = lang;
+      }, 300); // Sync with fade duration
+      return () => clearTimeout(timer);
+    }
+    prevLang.current = lang;
+  }, [lang, isJixiuDetail]);
+
+  const Text = ({ children, forceScramble }: { children: string, forceScramble?: boolean }) => {
+    if (forceScramble) return <ScrambleText text={children} />;
+    // In jixiu detail, we now use global transition, so we don't need individual FadeText animations
+    // unless we want them to be extra smooth. But for now, simple text swap works with the outer fade.
+    return <ScrambleText text={children} />;
+  };
 
   const ctaText = {
     zh: '启封 →',
@@ -129,16 +227,22 @@ export function CharacterCard({
         <div className="cd-bottom">
           {!locked ? (
             <>
-              <div className="cd-name-zh">{data?.name?.zh || ''}</div>
-              <div className="cd-name-latin">{data?.name?.en || ''}</div>
+              <div className="cd-name-zh">
+                <Text>{data.id === 'jixiu' ? UI_TRANSLATIONS[lang]['route.jixiu.label'] : (data?.name?.zh || '')}</Text>
+              </div>
+              {data.id !== 'jixiu' && (
+                <div className="cd-name-latin">
+                  <Text>{data?.name?.en || ''}</Text>
+                </div>
+              )}
               <div className="cd-swatch">
                 <span className="cd-swatch-box" style={{ background: data?.colorHex }} />
-                <span>{data?.colorLabel?.[lang]}</span>
+                <span><Text>{data?.colorLabel?.[lang]}</Text></span>
               </div>
             </>
           ) : (
             <>
-              <div className="cd-wax-label">{sealedLabel[lang]}</div>
+              <div className="cd-wax-label"><Text>{sealedLabel[lang]}</Text></div>
             </>
           )}
         </div>
@@ -156,41 +260,65 @@ export function CharacterCard({
             className="card-detail" 
             data-reading={reading || isClosing}
           >
-            <div className={`cd-header cd-header-full ${reading ? 'cd-header-collapsed' : ''}`}>
-              <div className="dt-header">
-                <span>{data?.romanIndex} · {data?.volumeNum?.[lang]}</span>
-                <span>{data?.trigram} · {data?.epithet?.[lang]} · {data?.colorLabel?.[lang]} · {data?.colorHex}</span>
-              </div>
-              <div className="dt-anchor">{data?.anchor}</div>
-              <h1 className="dt-name-zh">{data?.name?.zh}</h1>
-              {data?.alias && (
-                <div className="dt-alias" style={{ fontSize: '14px', opacity: 0.7, marginTop: '-4px', marginBottom: '8px', fontFamily: 'var(--font-sans)', color: 'var(--brass)' }}>
-                  {data.alias[lang]}
-                </div>
-              )}
-              <div className="dt-name-latin">{data?.name?.en}</div>
-              <div className="dt-name-ja">{data?.name?.ja}</div>
-              <div className="dt-identity">{data?.identity?.[lang]}</div>
-              <div className="dt-divider">· · ·</div>
+              <div className="cd-content-wrap" style={{ opacity: isLangTransitioning ? 0 : 1, transition: 'opacity 0.35s ease-in-out' }}>
+                <div className={`cd-header cd-header-full ${reading ? 'cd-header-collapsed' : ''}`}>
+                  <div className="dt-header">
+                    <span><Text>{`${data?.romanIndex} · ${data?.volumeNum?.[lang]}`}</Text></span>
+                    <span>
+                      <Text>{data.id === 'jixiu' ? data?.colorLabel?.[lang] : `${data?.trigram} · ${data?.epithet?.[lang]} · ${data?.colorLabel?.[lang]} · ${data?.colorHex}`}</Text>
+                    </span>
+                  </div>
+                  <div className="dt-anchor">{data?.anchor}</div>
+                  <h1 className="dt-name-zh">
+                    <Text>{data.id === 'jixiu' ? UI_TRANSLATIONS[lang]['route.jixiu.label'] : data?.name?.zh}</Text>
+                  </h1>
+                  {data?.alias && (
+                    <div className="dt-alias" style={{ fontSize: '14px', opacity: 0.7, marginTop: '-4px', marginBottom: '8px', fontFamily: 'var(--font-sans)', color: 'var(--brass)' }}>
+                      <Text>{data.alias[lang]}</Text>
+                    </div>
+                  )}
+                  {data.id !== 'jixiu' && (
+                    <>
+                      <div className="dt-name-latin">
+                        <Text>{data?.name?.en}</Text>
+                      </div>
+                      <div className="dt-name-ja">
+                        <Text>{data?.name?.ja}</Text>
+                      </div>
+                    </>
+                  )}
+                  <div className="dt-identity">
+                    <Text>{data?.identity?.[lang]}</Text>
+                  </div>
+                  <div className="dt-divider">· · ·</div>
 
-              <div className="dt-preview-block">
-                <blockquote className="dt-quote">{data?.quote?.[lang]}</blockquote>
-                <button className="dt-cta" onClick={e => { e.stopPropagation(); onStartReading?.() }}>
-                  {ctaText[lang]}
-                </button>
+                  <div className="dt-preview-block">
+                    <blockquote className="dt-quote">
+                      <Text>{data?.quote?.[lang]}</Text>
+                    </blockquote>
+                    <button className="dt-cta" onClick={e => { e.stopPropagation(); onStartReading?.() }}>
+                      <Text>{ctaText[lang]}</Text>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
 
             {reading && (
-              <div className="cd-header cd-header-compact">
-                <span className="cd-compact-symbol">☰</span>
-                <span className="cd-compact-name">
-                  {ROUTE_FALLBACK[data.id] || data?.name?.zh}
-                </span>
-              </div>
+                  <div className="cd-compact-wrap" style={{ opacity: isLangTransitioning ? 0 : 1, transition: 'opacity 0.35s ease-in-out' }}>
+                    <div className="cd-header cd-header-compact">
+                      <span className="cd-compact-symbol">{data.trigram}</span>
+                      <span className="cd-compact-name">
+                        <Text>{UI_TRANSLATIONS[lang][`route.${data.id}.label`] || ROUTE_FALLBACK[data.id]}</Text>
+                      </span>
+                    </div>
+                  </div>
             )}
 
-            <div className="dt-reader-block" id="character-reader-block">
+            <div 
+              className="dt-reader-block" 
+              id="character-reader-block"
+              onClick={e => e.stopPropagation()} // Protect inner clicks from closing the card
+            >
               {reading && (
                 <>
                   <button 
@@ -200,49 +328,76 @@ export function CharacterCard({
                   <ZhupiAnnotations />
                   <ChapterNav 
                     route={data.id} 
-                    currentChapter={currentChapter ?? 1}
+                    currentChapter={currentChapter}
                     onSelect={(n) => onChapterSelect?.(n)}
                   />
                   <div 
                     className="dt-progress-line" 
                     id="character-progress-line"
-                    style={{ '--progress': (getRouteProgress(data.id).readChapters.length / getTotalChaptersForRoute(data.id)) } as React.CSSProperties}
+                    style={{ '--progress': (progress / totalChapters) } as React.CSSProperties}
                   />
                   <ChapterBody 
                     key={`${data.id}-${currentChapter}`}
                     route={data.id}
-                    currentChapter={currentChapter ?? 1}
+                    currentChapter={currentChapter}
                     charColor={data.colorHex}
                     isClosing={isClosing}
                     onAdvance={(n) => onChapterSelect?.(n)}
                   />
 
                   <div className="cb-coin-wrap">
-                    <CoinButton 
-                      charColor={data.colorHex}
-                      onNext={() => {
-                        const total = getTotalChaptersForRoute(data.id);
-                        const cur = currentChapter ?? 1;
-                        markChapterRead(data.id, cur, cur);
-                        if (cur < total) {
-                          onChapterSelect?.(cur + 1);
-                        }
-                      }}
-                      disabled={(currentChapter ?? 1) >= getTotalChaptersForRoute(data.id)}
-                    />
+                    <AnimatePresence>
+                      {showCoin && (
+                        <motion.div
+                          key="coin"
+                          initial={data.id === 'jixiu' && !initialShowCoin.current ? { opacity: 0, filter: 'blur(4px)', y: -4 } : { opacity: 1 }}
+                          animate={{ opacity: 1, filter: 'blur(0)', y: 0 }}
+                          exit={{ opacity: 0, filter: 'blur(4px)', y: -4 }}
+                          transition={{ duration: 0.6, ease: 'easeOut' }}
+                        >
+                          <CoinButton 
+                            charColor={data.colorHex}
+                            onNext={() => {
+                              const cur = currentChapter;
+                              console.log(`[Coin] Clicked at ch${cur}`);
+                              markRead(cur); // Use the new markRead
+                              markChapterReadLegacy(data.id, cur, cur); // Keep legacy for compatibility
+                              if (cur < totalChapters) {
+                                onChapterSelect?.(cur + 1);
+                              }
+                            }}
+                            disabled={currentChapter >= totalChapters}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </>
               )}
             </div>
 
             {!reading && (
-              <div className="dt-meta">
-                {data?.metadata && (
+              <div className="dt-meta" style={{ opacity: isLangTransitioning ? 0 : 1, transition: 'opacity 0.35s ease-in-out' }}>
+                {dynamicMeta && (
                   <>
-                    <span>{data.metadata.volumeNum?.[lang]}</span>
-                    <span>{data.metadata.appears?.[lang]}</span>
-                    <span>{data.metadata.words?.[lang]}</span>
-                    <span>{data.metadata.role?.[lang]}</span>
+                    <span><Text>{dynamicMeta.volumeNum?.[lang]}</Text></span>
+                    <motion.span
+                      key={dynamicMeta.appears[lang]}
+                      initial={{ opacity: 0.4 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Text>{dynamicMeta.appears[lang]}</Text>
+                    </motion.span>
+                    <motion.span
+                      key={dynamicMeta.words[lang]}
+                      initial={{ opacity: 0.4 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Text>{dynamicMeta.words[lang]}</Text>
+                    </motion.span>
+                    <span><Text>{dynamicMeta.role?.[lang]}</Text></span>
                   </>
                 )}
               </div>
@@ -287,7 +442,7 @@ export function CharacterCard({
           )}
 
           {active && (
-            <SealedWarning onBack={() => onSelect?.()} />
+            <SealedWarning unlockHint={data.unlockHint} onBack={() => onSelect?.()} />
           )}
         </div>
       )}

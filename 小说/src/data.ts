@@ -1,5 +1,11 @@
 import { NovelWorld } from './types';
 
+export const JIXIU_CH_METADATA = [
+  { index: 1, words: 1150 },
+  { index: 2, words: 700 },
+  { index: 3, words: 1700 },
+];
+
 export const INITIAL_WORLDS: NovelWorld[] = [
   {
     id: 'w-1',

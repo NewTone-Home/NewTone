@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { markChapterRead } from '../services/progressService'
-import { loadChapter, listChapters } from '../services/chapterLoader'
-import { CoinButton } from './CoinButton'
+import React, { useEffect, useRef } from 'react'
+import { loadChapter } from '../services/chapterLoader'
 import { Route } from '../types'
 import { useTheme } from '../contexts/ThemeContext'
 import ReactMarkdown from 'react-markdown'
+import { useReadingProgress } from '../hooks/useReadingProgress'
 
 type Props = {
   route: Route
@@ -14,29 +13,39 @@ type Props = {
   onAdvance: (nextChapter: number) => void
 }
 
-const cnNum = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-
-export function ChapterBody({ route, currentChapter, charColor, isClosing, onAdvance }: Props) {
+export function ChapterBody({ route, currentChapter, charColor, isClosing }: Props) {
   const { fontSize } = useTheme()
+  const { markRead } = useReadingProgress(route)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const chapterData = loadChapter(route, currentChapter)
-  const chapters = listChapters(route)
-  const total = chapters.length
-  const isLast = currentChapter >= total
 
-  const handleNext = () => {
-    if (!isLast) {
-      markChapterRead(route, currentChapter, currentChapter)
-      onAdvance(currentChapter + 1)
-    } else {
-      markChapterRead(route, currentChapter, currentChapter)
+  useEffect(() => {
+    if (route !== 'jixiu') return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting) {
+        console.log(`[Sentinel] TRIGGERED: ${route} ch${currentChapter} is now read.`);
+        markRead(currentChapter);
+      }
+    }, { 
+      threshold: 0.01,
+      root: null,
+      rootMargin: '0px 0px 50px 0px' // Trigger slightly before reaching absolute bottom for better UX
+    })
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current)
     }
-  }
+
+    return () => observer.disconnect()
+  }, [route, currentChapter, markRead])
 
   const fontSizeMap = {
-    S: '15px',
-    M: '17px',
-    L: '19px'
+    S: '16px',
+    M: '18px',
+    L: '22px'
   }
 
   if (!chapterData) {
@@ -61,6 +70,13 @@ export function ChapterBody({ route, currentChapter, charColor, isClosing, onAdv
         </div>
         
         <ReactMarkdown>{chapterData.content}</ReactMarkdown>
+
+        {/* Sentinel for progressive unlocking */}
+        <div 
+          ref={sentinelRef} 
+          data-end-sentinel 
+          style={{ height: '1px', width: '100%', marginTop: '20px' }} 
+        />
       </div>
     </div>
   )

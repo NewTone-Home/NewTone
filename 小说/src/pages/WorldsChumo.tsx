@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { GlobalHeader } from '../components/GlobalHeader';
 import { CharacterCard } from '../components/CharacterCard';
 import { isRouteUnlocked } from '../services/progressService';
 import { Route as ReadingRoute } from '../types';
+import { ScrambleText } from '../components/ScrambleText';
 
 const CHARACTERS = [
   {
@@ -15,15 +16,14 @@ const CHARACTERS = [
     colorHex: '#C4E5EA',
     colorLabel: { zh: '青白', en: 'QINGBAI', ja: '青白' },
     volumeNum: { zh: '卷其一', en: 'VOL. I', ja: '巻其一' },
-    name: { zh: '姬修杰·札', en: 'JI XIUJIE', ja: 'キ・シュウケツ' },
+    name: { zh: '姬修杰·札', en: null, ja: null },
     epithet: { zh: '札', en: 'LETTER', ja: '札' },
-    identity: { zh: '易学研究生·祖宅继承者', en: 'Divination scholar · heir of the ancestral home', ja: '易学大学院生・祖宅継承者' },
-    quote: { zh: '「青石狮子啊开嘴，我听见名字被念出。」', en: '"The stone lion\'s mouth opened — I heard my name called."', ja: '「青石の獅子が口を開き、我が名の呼ばれるを聞く。」' },
+    identity: { zh: '执子者·亦为子', en: 'He who plays, and is played.', ja: '駒を運ぶ者、また駒なり' },
+    quote: { zh: '「我不在棋盘外，我只是还没看见自己脚下的格子。」', en: '"I\'m not outside the board. I just haven\'t seen the square beneath my feet yet."', ja: '「私は盤の外にいるのではない。ただ、自分の足元の格がまだ見えていないだけだ。」' },
     metadata: {
-      volumeNum: { zh: '卷其一', en: 'VOL. I', ja: '巻其一' },
-      appears: { zh: '见·第一章至卷尾', en: 'APPEARS · CH.1–END', ja: '登場·第一章〜巻末' },
-      words: { zh: '字·约一万二千', en: 'WORDS · ~12,000', ja: '字数·約一万二千' },
-      role: { zh: '别·札记 POV', en: 'ROLE · LETTER POV', ja: '役·札記 POV' }
+      appears: { zh: '见·第一章·第二章', en: 'Ch.1 – Ch.2', ja: '第一章・第二章' },
+      words: { zh: '字·约四千', en: '~4,000 words', ja: '約四千字' },
+      role: { zh: '别·三人称限知', en: '3rd-person limited', ja: '三人称限定' }
     },
     unlock: 0,
     route: '/read/jixiu/1'
@@ -87,6 +87,20 @@ export function WorldsChumo() {
   const params = useParams();
   const { lang } = useTheme();
 
+  const [isLangTransitioning, setIsLangTransitioning] = useState(false);
+  const prevLang = useRef(lang);
+
+  useEffect(() => {
+    if (prevLang.current !== lang) {
+      setIsLangTransitioning(true);
+      const timer = setTimeout(() => {
+        setIsLangTransitioning(false);
+        prevLang.current = lang;
+      }, 350); // Match sync duration
+      return () => clearTimeout(timer);
+    }
+  }, [lang]);
+
   const selectedRoute = (params.route ?? undefined) as ReadingRoute | undefined;
   const currentChapter = params.chapter ? Number(params.chapter) : 1;
 
@@ -139,56 +153,69 @@ export function WorldsChumo() {
   return (
     <div className="chumo-page">
       <GlobalHeader hideSocial isReading={isReading} />
-      {!selectedRoute && <div className="chumo-title">{title[lang]}</div>}
-      <div className="card-row" data-has-active={selectedRoute ? 'true' : 'false'}>
-        <CharacterCard 
-          data={CHARACTERS[0]} 
-          active={selectedRoute === 'jixiu'} 
-          reading={isReading && selectedRoute === 'jixiu'}
-          isClosing={isClosing && selectedRoute === 'jixiu'}
-          currentChapter={currentChapter}
-          onSelect={() => handleSelect('jixiu')}
-          onStartReading={() => setIsReading(true)}
-          onExitReading={handleExitReading}
-          onChapterSelect={(n) => navigate(`/read/jixiu/${n}`)}
-        />
-        <CharacterCard 
-          data={CHARACTERS[1]} 
-          active={selectedRoute === 'ruoyu'} 
-          reading={isReading && selectedRoute === 'ruoyu'}
-          isClosing={isClosing && selectedRoute === 'ruoyu'}
-          currentChapter={currentChapter}
-          onSelect={() => handleSelect('ruoyu')}
-          onStartReading={() => setIsReading(true)}
-          onExitReading={handleExitReading}
-          onChapterSelect={(n) => navigate(`/read/ruoyu/${n}`)}
-        />
-        <CharacterCard 
-          data={CHARACTERS[2]} 
-          locked={!isRouteUnlocked('yunling')} 
-          active={selectedRoute === 'yunling'} 
-          reading={isReading && selectedRoute === 'yunling'}
-          isClosing={isClosing && selectedRoute === 'yunling'}
-          currentChapter={currentChapter}
-          onSelect={() => handleSelect('yunling')}
-          onStartReading={() => setIsReading(true)}
-          onExitReading={handleExitReading}
-          onChapterSelect={(n) => navigate(`/read/yunling/${n}`)}
-        />
-        <CharacterCard 
-          data={CHARACTERS[3]} 
-          locked={!isRouteUnlocked('chengyuan')} 
-          active={selectedRoute === 'chengyuan'} 
-          reading={isReading && selectedRoute === 'chengyuan'}
-          isClosing={isClosing && selectedRoute === 'chengyuan'}
-          currentChapter={currentChapter}
-          onSelect={() => handleSelect('chengyuan')}
-          onStartReading={() => setIsReading(true)}
-          onExitReading={handleExitReading}
-          onChapterSelect={(n) => navigate(`/read/chengyuan/${n}`)}
-        />
+      <div 
+        className="chumo-content-wrap" 
+        style={{ 
+          opacity: isLangTransitioning ? 0 : 1, 
+          transition: 'opacity 0.35s ease-in-out',
+          display: 'contents' // Keep layout intact
+        }}
+      >
+        {!selectedRoute && <div className="chumo-title"><ScrambleText text={title[lang]} /></div>}
+        <div className="card-row" data-has-active={selectedRoute ? 'true' : 'false'}>
+          <CharacterCard 
+            data={CHARACTERS[0]} 
+            active={selectedRoute === 'jixiu'} 
+            reading={isReading && selectedRoute === 'jixiu'}
+            isClosing={isClosing && selectedRoute === 'jixiu'}
+            currentChapter={currentChapter}
+            onSelect={() => handleSelect('jixiu')}
+            onStartReading={() => setIsReading(true)}
+            onExitReading={handleExitReading}
+            onChapterSelect={(n) => navigate(`/read/jixiu/${n}`)}
+          />
+          <CharacterCard 
+            data={CHARACTERS[1]} 
+            active={selectedRoute === 'ruoyu'} 
+            reading={isReading && selectedRoute === 'ruoyu'}
+            isClosing={isClosing && selectedRoute === 'ruoyu'}
+            currentChapter={currentChapter}
+            onSelect={() => handleSelect('ruoyu')}
+            onStartReading={() => setIsReading(true)}
+            onExitReading={handleExitReading}
+            onChapterSelect={(n) => navigate(`/read/ruoyu/${n}`)}
+          />
+          <CharacterCard 
+            data={CHARACTERS[2]} 
+            locked={!isRouteUnlocked('yunling')} 
+            active={selectedRoute === 'yunling'} 
+            reading={isReading && selectedRoute === 'yunling'}
+            isClosing={isClosing && selectedRoute === 'yunling'}
+            currentChapter={currentChapter}
+            onSelect={() => handleSelect('yunling')}
+            onStartReading={() => setIsReading(true)}
+            onExitReading={handleExitReading}
+            onChapterSelect={(n) => navigate(`/read/yunling/${n}`)}
+          />
+          <CharacterCard 
+            data={CHARACTERS[3]} 
+            locked={!isRouteUnlocked('chengyuan')} 
+            active={selectedRoute === 'chengyuan'} 
+            reading={isReading && selectedRoute === 'chengyuan'}
+            isClosing={isClosing && selectedRoute === 'chengyuan'}
+            currentChapter={currentChapter}
+            onSelect={() => handleSelect('chengyuan')}
+            onStartReading={() => setIsReading(true)}
+            onExitReading={handleExitReading}
+            onChapterSelect={(n) => navigate(`/read/chengyuan/${n}`)}
+          />
+        </div>
+        {!selectedRoute && (
+          <div className="chumo-back" onClick={() => navigate('/library')}>
+            <ScrambleText text={back[lang]} />
+          </div>
+        )}
       </div>
-      {!selectedRoute && <div className="chumo-back" onClick={() => navigate('/library')}>{back[lang]}</div>}
     </div>
   );
 }
