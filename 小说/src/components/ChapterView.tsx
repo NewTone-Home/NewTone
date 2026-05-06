@@ -6,6 +6,8 @@ import { markChapterRead, getFontSize } from '../services/progressService';
 import { FontSize, Route } from '../types';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import { ScrambleText } from './ScrambleText';
+import { FadeText } from './FadeText';
 
 const FS_MAP: Record<FontSize, string> = { 
   small: '16px', 
@@ -57,7 +59,11 @@ export function ChapterView({ route, currentRouteChapter }: ChapterViewProps) {
         </button>
         <span className="read-nav-progress">{currentRouteChapter} / {chapters.length}</span>
         <button onClick={handleNext} className="read-nav-btn primary" disabled={isLastChapter}>
-          {isLastChapter ? t('sidebar.locked') : `${t('reader.next')} →`}
+          {route === 'jixiu' ? (
+            <ScrambleText text={isLastChapter ? t('sidebar.locked') : `${t('reader.next')} →`} />
+          ) : (
+            isLastChapter ? t('sidebar.locked') : `${t('reader.next')} →`
+          )}
         </button>
       </div>
     </div>

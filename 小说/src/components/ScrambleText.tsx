@@ -2,10 +2,10 @@ import React from 'react';
 
 const SCRAMBLE_POOL = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789刈灵岚枢鸿煜蜃辰玦暝';
 
-export function ScrambleText({ text, className }: { text: string; className?: string }) {
+export function ScrambleText({ text, className, delay = 0 }: { text: string; className?: string, delay?: number }) {
   const [display, setDisplay] = React.useState(text);
   const ref = React.useRef<HTMLSpanElement>(null);
-  const lastTextRef = React.useRef(text);
+  const lastTextRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     if (text === lastTextRef.current) return;
@@ -15,8 +15,8 @@ export function ScrambleText({ text, className }: { text: string; className?: st
     if (reduced) { setDisplay(text); return; }
 
     const el = ref.current;
-    let waveDelay = 0;
-    if (el) {
+    let waveDelay = delay;
+    if (el && delay === 0) {
       const r = el.getBoundingClientRect();
       const xN = r.left / window.innerWidth;
       const yN = r.top  / window.innerHeight;

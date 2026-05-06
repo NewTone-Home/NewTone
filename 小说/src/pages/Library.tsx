@@ -6,6 +6,8 @@ import { useLang } from '../contexts/ThemeContext';
 import { UI_TRANSLATIONS } from '../locales';
 import { ScrambleText } from '../components/ScrambleText';
 import { useTransition } from '../App';
+import { isVolumeUnsealed } from '../services/progressService';
+import { Route } from '../types';
 
 function VoidPaperBg() {
   return (
@@ -225,44 +227,51 @@ export const Library: React.FC = () => {
   const islands = [
     {
       id: 'chumo',
+      route: 'jixiu' as Route,
       volume: 1 as const,
       left: '17%',
       top: '50%',
       size: 200,
       z: 4,
-      locked: false,
+      locked: !isVolumeUnsealed('jixiu'),
       coords: "35.2500° N / 122.7167° E",
       onClick: () => triggerTransition('/worlds/chumo', '推开院门'),
     },
     {
       id: 'volume-2',
+      route: 'ruoyu' as Route,
       volume: 2 as const,
       left: '40%',
       top: '48%',
       size: 180,
       z: 3,
-      locked: true,
+      locked: !isVolumeUnsealed('ruoyu'),
       coords: "33.3333° S / 110.0333° W",
+      onClick: () => triggerTransition('/read/ruoyu/1', '展开筮辞'),
     },
     {
       id: 'volume-3',
+      route: 'yunling' as Route,
       volume: 3 as const,
       left: '62%',
       top: '52%',
       size: 160,
       z: 2,
-      locked: true,
+      locked: !isVolumeUnsealed('yunling'),
       coords: "12.7833° N / 88.5167° E",
+      onClick: () => triggerTransition('/read/yunling/1', '启封笺纸'),
     },
     {
       id: 'volume-4',
+      route: 'chengyuan' as Route,
       volume: 4 as const,
       left: '83%',
       top: '49%',
       size: 140,
       z: 1,
-      locked: true,
+      locked: !isVolumeUnsealed('chengyuan'),
       coords: "48.1000° N / 16.3667° E",
+      onClick: () => triggerTransition('/read/chengyuan/1', '探寻秘藏'),
     },
   ];
 

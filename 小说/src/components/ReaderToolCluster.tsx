@@ -3,18 +3,23 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Type, Sun, Moon, Languages } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { UI_TRANSLATIONS } from '../locales';
-import { FontSize, Language } from '../types';
+import { FontSize, Language, Route } from '../types';
+import { FadeText } from './FadeText';
+import { ScrambleText } from './ScrambleText';
 
 interface ReaderToolClusterProps {
   fontSize: FontSize;
   setFontSize: (s: FontSize) => void;
+  route?: Route;
 }
 
-export const ReaderToolCluster: React.FC<ReaderToolClusterProps> = ({ fontSize, setFontSize }) => {
+export const ReaderToolCluster: React.FC<ReaderToolClusterProps> = ({ fontSize, setFontSize, route }) => {
   const { theme, setTheme, lang, setLang } = useTheme();
   const [expanded, setExpanded] = useState(false);
   const [activeOption, setActiveOption] = useState<'font' | 'theme' | 'lang' | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isJixiu = route === 'jixiu';
 
   const t = (key: string) => UI_TRANSLATIONS[lang]?.[key] || key;
 
@@ -43,9 +48,9 @@ export const ReaderToolCluster: React.FC<ReaderToolClusterProps> = ({ fontSize, 
   ];
 
   const icons = [
-    { id: 'font', type: 'top', Icon: Type, pos: 'top-[6px] left-1/2 -translate-x-1/2' },
-    { id: 'theme', type: 'left', Icon: theme === 'day' ? Sun : Moon, pos: 'bottom-[10px] left-[12px]' },
-    { id: 'lang', type: 'right', label: lang.toUpperCase(), pos: 'bottom-[10px] right-[12px]' },
+    { id: 'font', type: 'top', Icon: Type, pos: 'top-[6px] left-1/2 -translate-x-1/2', labelKey: 'tool.font' },
+    { id: 'theme', type: 'left', Icon: theme === 'day' ? Sun : Moon, pos: 'bottom-[10px] left-[12px]', labelKey: 'tool.theme' },
+    { id: 'lang', type: 'right', label: lang.toUpperCase(), pos: 'bottom-[10px] right-[12px]', labelKey: 'tool.lang' },
   ];
 
   const variants = {
@@ -115,10 +120,25 @@ export const ReaderToolCluster: React.FC<ReaderToolClusterProps> = ({ fontSize, 
               >
                 {icon.id === 'lang' ? (
                   <span className="text-[10px] font-bold border border-[var(--brass)] rounded-[2px] px-[2px] min-w-[18px] text-center">
-                    {lang === 'zh' ? '中' : lang === 'ja' ? '日' : 'EN'}
+                    {isJixiu ? (
+                      <ScrambleText text={lang === 'zh' ? '中' : lang === 'ja' ? '日' : 'EN'} />
+                    ) : (
+                      <FadeText>{lang === 'zh' ? '中' : lang === 'ja' ? '日' : 'EN'}</FadeText>
+                    )}
                   </span>
                 ) : (
                   <icon.Icon size={20} strokeWidth={1.5} />
+                )}
+                {expanded && (
+                  <span className={`absolute text-[8px] whitespace-nowrap opacity-60 tracking-[0.2em] uppercase font-serif
+                    ${icon.id === 'font' ? 'top-[-14px]' : 'bottom-[-14px]'}`}
+                  >
+                    {isJixiu ? (
+                      <ScrambleText text={t(icon.labelKey!)} />
+                    ) : (
+                      <FadeText>{t(icon.labelKey!)}</FadeText>
+                    )}
+                  </span>
                 )}
               </motion.button>
             ))}
@@ -145,7 +165,7 @@ export const ReaderToolCluster: React.FC<ReaderToolClusterProps> = ({ fontSize, 
                 onClick={() => setFontSize(size)}
                 className={`text-xs p-1 relative ${fontSize === size ? 'text-[var(--brass)] font-bold' : 'text-[var(--ink)] opacity-60'}`}
               >
-                {t(`fontSize.${size}`)}
+                {isJixiu ? <ScrambleText text={t(`fontSize.${size}`)} /> : t(`fontSize.${size}`)}
                 {fontSize === size && (
                   <motion.div layoutId="font-active" className="absolute bottom-0 left-1 right-1 h-[1.5px] bg-[var(--brass)] rounded-full" />
                 )}
@@ -197,7 +217,11 @@ export const ReaderToolCluster: React.FC<ReaderToolClusterProps> = ({ fontSize, 
                 onClick={() => setLang(l)}
                 className={`p-2 text-xs font-serif transition-colors rounded-md relative ${lang === l ? 'bg-[var(--brass)] bg-opacity-10 text-[var(--brass)]' : 'text-[var(--ink)]'}`}
               >
-                {l === 'zh' ? '中' : l === 'en' ? 'EN' : '日'}
+                {isJixiu ? (
+                  <ScrambleText text={l === 'zh' ? '中' : l === 'en' ? 'EN' : '日'} />
+                ) : (
+                  l === 'zh' ? '中' : l === 'en' ? 'EN' : '日'
+                )}
                 {lang === l && (
                   <motion.div layoutId="lang-active" className="absolute -bottom-1 w-4 h-[1.5px] bg-[var(--brass)] rounded-full" />
                 )}

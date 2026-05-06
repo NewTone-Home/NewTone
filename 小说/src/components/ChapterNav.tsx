@@ -3,47 +3,57 @@ import { motion } from 'motion/react';
 import { listChapters } from '../services/chapterLoader';
 import { Route } from '../types';
 import { useReadingProgress } from '../hooks/useReadingProgress';
-import { getRouteProgress } from '../services/progressService';
+import { getRouteProgress, isChapterUnlocked, getGlobalReadingState } from '../services/progressService';
+import { useTheme } from '../contexts/ThemeContext';
+import { FadeText } from './FadeText';
+import { ScrambleText } from './ScrambleText';
 
 type Props = {
   route: Route;
   currentChapter: number;
   onSelect: (chapter: number) => void;
+  lang?: string;
 };
 
-const ChapterNav: React.FC<Props> = ({ route, currentChapter, onSelect }) => {
+const ChapterNav: React.FC<Props> = ({ route, currentChapter, onSelect, lang: langProp }) => {
+  const { lang: contextLang } = useTheme();
+  const lang = langProp ?? contextLang;
   const { progress, isVisible } = useReadingProgress(route);
   const chapters = listChapters(route);
   
   // Track initial progress to avoid repeating animations on already-unlocked chapters
   const initialProgress = useRef(progress);
 
-  const items = useMemo(() => {
-    if (route === 'jixiu') {
-      // Special logic for jixiu: only show visible chapters
-      return chapters
-        .filter(ch => isVisible(ch.chapter))
-        .map(ch => ({
-          chapter: ch.chapter,
-          title: ch.title,
-          isRead: ch.chapter <= progress,
-          isCurrent: ch.chapter === currentChapter,
-          isLocked: false,
-          shouldAnimate: ch.chapter > initialProgress.current + 1
-        }));
-    } else {
-      // Original logic for other characters
-      const progLegacy = getRouteProgress(route);
-      return chapters.map(ch => ({
-        chapter: ch.chapter,
-        title: ch.title,
-        isRead: progLegacy.readChapters.includes(ch.chapter),
-        isCurrent: ch.chapter === currentChapter,
-        isLocked: ch.chapter > progLegacy.unlockedCount + 1 && !progLegacy.readChapters.includes(ch.chapter),
-        shouldAnimate: false
-      }));
+  const getChapterTitle = (ch: any) => {
+    // If title is "第X章", localize it
+    const match = ch.title.match(/第([一二三四五六七八九十]|[\d]+)章/);
+    if (match) {
+      const num = match[1];
+      if (lang === 'en') return `Chapter ${ch.chapter}`;
+      if (lang === 'ja') return `第${num}章`;
+      return ch.title;
     }
-  }, [route, chapters, progress, isVisible, currentChapter]);
+    return ch.title;
+  };
+
+  const items = useMemo(() => {
+    const globalState = getGlobalReadingState();
+    const progLegacy = getRouteProgress(route);
+
+    return chapters.map(ch => {
+      const unlocked = isChapterUnlocked(route as Route, ch.chapter, globalState);
+      const isRead = progLegacy.readChapters.includes(ch.chapter) || (route === 'jixiu' && ch.chapter <= progress);
+
+      return {
+        chapter: ch.chapter,
+        title: getChapterTitle(ch),
+        isRead,
+        isCurrent: ch.chapter === currentChapter,
+        isLocked: !unlocked && !isRead,
+        shouldAnimate: route === 'jixiu' && ch.chapter > initialProgress.current + 1
+      };
+    });
+  }, [route, chapters, progress, currentChapter, lang]);
 
   // Handle case where no chapters exist
   if (items.length === 0) {
@@ -75,7 +85,9 @@ const ChapterNav: React.FC<Props> = ({ route, currentChapter, onSelect }) => {
             }}
           >
             <span className="cn-dot">{getIndicator(item)}</span>
-            <span className="cn-title">{item.title}</span>
+            <span className="cn-title">
+              {route === 'jixiu' ? <ScrambleText text={item.title} /> : item.title}
+            </span>
           </button>
         );
 

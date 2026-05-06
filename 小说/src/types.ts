@@ -41,9 +41,15 @@ export interface NovelWorld {
   isLocked?: boolean;
 }
 
+export type ChapterType = 'main' | 'side' | 'cross' | 'extra';
+
 export interface StoryChapter {
   id: string;
   title: LocalizedString;
   content: LocalizedString;
   wordCount: number;
+  routeId: Route;
+  chapterNumber: number;
+  type: ChapterType;
+  mainOrder?: number;
 }

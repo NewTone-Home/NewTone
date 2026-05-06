@@ -1,4 +1,16 @@
-import { NovelWorld } from './types';
+import { NovelWorld, ChapterType } from './types';
+
+export const CHAPTER_METADATA_REGISTRY: Record<string, { type: ChapterType, mainOrder?: number }> = {
+  'jixiu-1': { type: 'cross' },
+  'jixiu-2': { type: 'main', mainOrder: 3 },
+  'jixiu-3': { type: 'main', mainOrder: 4 },
+  'jixiu-4': { type: 'side' },
+  'jixiu-5': { type: 'main', mainOrder: 6 },
+  'ruoyu-1': { type: 'cross' },
+  'ruoyu-2': { type: 'main', mainOrder: 5 },
+  'ruoyu-3': { type: 'cross' },
+  'ruoyu-4': { type: 'side' },
+};
 
 export const JIXIU_CH_METADATA = [
   { index: 1, words: 1150 },

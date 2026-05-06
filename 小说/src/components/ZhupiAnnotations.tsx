@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
+import { ScrambleText } from './ScrambleText'
 
 type GroupKey = 'size' | 'tone' | 'tongue'
 
@@ -26,8 +27,9 @@ const OPTIONS = {
   ],
 }
 
-export const ZhupiAnnotations: React.FC = () => {
-  const { theme, setTheme, lang, setLang, fontSize, setFontSize } = useTheme()
+export const ZhupiAnnotations: React.FC<{ lang?: string }> = ({ lang: langProp }) => {
+  const { theme, setTheme, lang: contextLang, setLang, fontSize, setFontSize } = useTheme()
+  const lang = (langProp ?? contextLang) as any
   const [active, setActive] = useState<GroupKey | null>(null)
   const hideTimerRef = useRef<number | undefined>(undefined)
   
@@ -62,7 +64,9 @@ export const ZhupiAnnotations: React.FC = () => {
           onMouseEnter={() => handleEnter(key)}
           onMouseLeave={handleLeave}
         >
-          <div className="zp-label">{LABELS[key][lang]}</div>
+          <div className="zp-label">
+            <ScrambleText text={LABELS[key][lang]} />
+          </div>
           <div className="zp-options">
             {OPTIONS[key].map(opt => (
               <button
@@ -70,7 +74,7 @@ export const ZhupiAnnotations: React.FC = () => {
                 className={`zp-option ${currentValue(key) === opt.val ? 'zp-current' : ''}`}
                 onClick={() => applyValue(key, opt.val)}
               >
-                {opt.label[lang]}
+                <ScrambleText text={opt.label[lang]} />
               </button>
             ))}
           </div>

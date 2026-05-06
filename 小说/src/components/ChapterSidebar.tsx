@@ -3,7 +3,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { UI_TRANSLATIONS, ROUTE_FALLBACK } from '../locales';
 import { listChapters } from '../services/chapterLoader';
 import { Route } from '../types';
-import { getRouteProgress } from '../services/progressService';
+import { getRouteProgress, isChapterUnlocked } from '../services/progressService';
 
 interface ChapterSidebarProps {
   route: Route;
@@ -23,9 +23,7 @@ export const ChapterSidebar: React.FC<ChapterSidebarProps> = ({
   const allChapters = listChapters(route);
   const totalChapters = allChapters.length;
   
-  // 简单逻辑：已读章节 + 下一章
-  const unlockedLimit = progress.unlockedCount + 1;
-  const unlockedChapters = allChapters.filter(ch => ch.chapter <= unlockedLimit || progress.readChapters.includes(ch.chapter));
+  const unlockedChapters = allChapters.filter(ch => isChapterUnlocked(route, ch.chapter) || progress.readChapters.includes(ch.chapter));
   
   const readMains = progress.readChapters;
   const readCount = readMains.length;

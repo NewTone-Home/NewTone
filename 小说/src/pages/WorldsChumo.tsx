@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { GlobalHeader } from '../components/GlobalHeader';
 import { CharacterCard } from '../components/CharacterCard';
-import { isRouteUnlocked } from '../services/progressService';
+import { isVolumeUnsealed } from '../services/progressService';
 import { Route as ReadingRoute } from '../types';
 import { ScrambleText } from '../components/ScrambleText';
 
@@ -86,26 +86,30 @@ export function WorldsChumo() {
   const navigate = useNavigate();
   const params = useParams();
   const { lang } = useTheme();
-
-  const [isLangTransitioning, setIsLangTransitioning] = useState(false);
-  const prevLang = useRef(lang);
+  const [effectiveLang, setEffectiveLang] = useState(lang);
 
   useEffect(() => {
-    if (prevLang.current !== lang) {
-      setIsLangTransitioning(true);
+    if (lang !== effectiveLang) {
       const timer = setTimeout(() => {
-        setIsLangTransitioning(false);
-        prevLang.current = lang;
-      }, 350); // Match sync duration
+        setEffectiveLang(lang);
+      }, 350); 
       return () => clearTimeout(timer);
     }
-  }, [lang]);
+  }, [lang, effectiveLang]);
 
+  const isTransitioning = lang !== effectiveLang;
   const selectedRoute = (params.route ?? undefined) as ReadingRoute | undefined;
   const currentChapter = params.chapter ? Number(params.chapter) : 1;
 
   const [isReading, setIsReading] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+
+  // URL Guard: If route is sealed, kick back to library
+  useEffect(() => {
+    if (selectedRoute && !isVolumeUnsealed(selectedRoute)) {
+       navigate('/library', { replace: true });
+    }
+  }, [selectedRoute, navigate]);
 
   const handleExitReading = () => {
     setIsClosing(true);
@@ -156,19 +160,21 @@ export function WorldsChumo() {
       <div 
         className="chumo-content-wrap" 
         style={{ 
-          opacity: isLangTransitioning ? 0 : 1, 
+          opacity: isTransitioning ? 0 : 1, 
           transition: 'opacity 0.35s ease-in-out',
           display: 'contents' // Keep layout intact
         }}
       >
-        {!selectedRoute && <div className="chumo-title"><ScrambleText text={title[lang]} /></div>}
+        {!selectedRoute && <div className="chumo-title"><ScrambleText text={title[effectiveLang]} /></div>}
         <div className="card-row" data-has-active={selectedRoute ? 'true' : 'false'}>
           <CharacterCard 
             data={CHARACTERS[0]} 
+            locked={!isVolumeUnsealed('jixiu')}
             active={selectedRoute === 'jixiu'} 
             reading={isReading && selectedRoute === 'jixiu'}
             isClosing={isClosing && selectedRoute === 'jixiu'}
             currentChapter={currentChapter}
+            lang={effectiveLang}
             onSelect={() => handleSelect('jixiu')}
             onStartReading={() => setIsReading(true)}
             onExitReading={handleExitReading}
@@ -176,10 +182,12 @@ export function WorldsChumo() {
           />
           <CharacterCard 
             data={CHARACTERS[1]} 
+            locked={!isVolumeUnsealed('ruoyu')}
             active={selectedRoute === 'ruoyu'} 
             reading={isReading && selectedRoute === 'ruoyu'}
             isClosing={isClosing && selectedRoute === 'ruoyu'}
             currentChapter={currentChapter}
+            lang={effectiveLang}
             onSelect={() => handleSelect('ruoyu')}
             onStartReading={() => setIsReading(true)}
             onExitReading={handleExitReading}
@@ -187,11 +195,12 @@ export function WorldsChumo() {
           />
           <CharacterCard 
             data={CHARACTERS[2]} 
-            locked={!isRouteUnlocked('yunling')} 
+            locked={!isVolumeUnsealed('yunling')} 
             active={selectedRoute === 'yunling'} 
             reading={isReading && selectedRoute === 'yunling'}
             isClosing={isClosing && selectedRoute === 'yunling'}
             currentChapter={currentChapter}
+            lang={effectiveLang}
             onSelect={() => handleSelect('yunling')}
             onStartReading={() => setIsReading(true)}
             onExitReading={handleExitReading}
@@ -199,11 +208,12 @@ export function WorldsChumo() {
           />
           <CharacterCard 
             data={CHARACTERS[3]} 
-            locked={!isRouteUnlocked('chengyuan')} 
+            locked={!isVolumeUnsealed('chengyuan')} 
             active={selectedRoute === 'chengyuan'} 
             reading={isReading && selectedRoute === 'chengyuan'}
             isClosing={isClosing && selectedRoute === 'chengyuan'}
             currentChapter={currentChapter}
+            lang={effectiveLang}
             onSelect={() => handleSelect('chengyuan')}
             onStartReading={() => setIsReading(true)}
             onExitReading={handleExitReading}
@@ -212,7 +222,7 @@ export function WorldsChumo() {
         </div>
         {!selectedRoute && (
           <div className="chumo-back" onClick={() => navigate('/library')}>
-            <ScrambleText text={back[lang]} />
+            <ScrambleText text={back[effectiveLang]} />
           </div>
         )}
       </div>

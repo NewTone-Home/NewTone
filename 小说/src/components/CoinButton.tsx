@@ -1,12 +1,19 @@
 import React, { useState } from 'react'
+import { useTheme } from '../contexts/ThemeContext'
+import { UI_TRANSLATIONS } from '../locales'
+import { FadeText } from './FadeText'
+import { ScrambleText } from './ScrambleText'
 
 type Props = {
   charColor: string
   onNext: () => void
   disabled?: boolean
+  route?: string // Option to check if it's jixiu
 }
 
-export const CoinButton: React.FC<Props> = ({ charColor, onNext, disabled }) => {
+export const CoinButton: React.FC<Props> = ({ charColor, onNext, disabled, route }) => {
+  const { lang: contextLang } = useTheme()
+  const lang = contextLang
   const [flipping, setFlipping] = useState(false)
   const [hover, setHover] = useState(false)
   
@@ -18,6 +25,8 @@ export const CoinButton: React.FC<Props> = ({ charColor, onNext, disabled }) => 
       setFlipping(false)
     }, 600)
   }
+
+  const label = UI_TRANSLATIONS[lang as any]?.['reader.next'] || '下一章 →';
   
   return (
     <button
@@ -26,7 +35,7 @@ export const CoinButton: React.FC<Props> = ({ charColor, onNext, disabled }) => 
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{ '--cb-color': charColor } as React.CSSProperties}
-      aria-label="下一章"
+      aria-label={label}
     >
       <svg viewBox="0 0 48 48" width="44" height="44">
         {/* 外圆 */}
@@ -48,7 +57,9 @@ export const CoinButton: React.FC<Props> = ({ charColor, onNext, disabled }) => 
         <line x1="29" y1="29" x2="33" y2="33"
               stroke="currentColor" strokeWidth="1" opacity="0.7" />
       </svg>
-      <span className="cb-label">下一章 →</span>
+      <span className="cb-label">
+        {route === 'jixiu' ? <ScrambleText text={label} /> : label}
+      </span>
     </button>
   )
 }

@@ -4,6 +4,8 @@ import { UI_TRANSLATIONS } from '../locales';
 import { ReaderToolCluster } from './ReaderToolCluster';
 import { Route, FontSize } from '../types';
 import { getFontSize, setFontSize as saveFs } from '../services/progressService';
+import { ScrambleText } from './ScrambleText';
+import { FadeText } from './FadeText';
 
 interface ReaderToolbarProps {
   route: Route;
@@ -31,12 +33,18 @@ export const ReaderToolbar: React.FC<ReaderToolbarProps> = ({ route, onBack }) =
       <div className="rt-left">
         <button className="rt-back" onClick={onBack}>
           <span className="rt-back-arrow">←</span>
-          <span className="rt-back-text">{t('read.back')}</span>
+          <span className="rt-back-text">
+            {route === 'jixiu' ? (
+              <ScrambleText text={t('read.back')} />
+            ) : (
+              <FadeText>{t('read.back')}</FadeText>
+            )}
+          </span>
         </button>
       </div>
 
       <div className="rt-right">
-        <ReaderToolCluster fontSize={fs} setFontSize={handleSetFs} />
+        <ReaderToolCluster fontSize={fs} setFontSize={handleSetFs} route={route} />
       </div>
     </div>
   );
