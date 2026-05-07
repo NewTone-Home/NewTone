@@ -17,6 +17,18 @@ type Props = {
   onAdvance: (nextChapter: number) => void
 }
 
+const ChapterParagraph = ({ children, route }: { children: any, route: string }) => {
+  // Ensure children is a string for ScrambleText
+  const textContent = React.Children.toArray(children)
+    .map(child => (typeof child === 'string' || typeof child === 'number') ? child : '')
+    .join('');
+
+  if (route === 'jixiu' && textContent) {
+    return <p style={{ marginBottom: '1.5em' }}><ScrambleText text={textContent} /></p>;
+  }
+  return <p>{children}</p>;
+};
+
 export function ChapterBody({ route, currentChapter, charColor, isClosing, lang: langProp }: Props) {
   const { fontSize, lang: contextLang } = useTheme()
   const lang = langProp ?? contextLang
@@ -45,9 +57,9 @@ export function ChapterBody({ route, currentChapter, charColor, isClosing, lang:
         markRead(currentChapter);
       }
     }, { 
-      threshold: 0.01,
+      threshold: 0.5,
       root: null,
-      rootMargin: '0px 0px 50px 0px' // Trigger slightly before reaching absolute bottom for better UX
+      rootMargin: '0px 0px -20px 0px' // Trigger only when well into view
     })
 
     if (sentinelRef.current) {
@@ -78,13 +90,9 @@ export function ChapterBody({ route, currentChapter, charColor, isClosing, lang:
     return chapterData.content;
   };
 
-  const renderParagraph = (props: any) => {
-    const text = props.children;
-    if (route === 'jixiu') {
-      return <p><ScrambleText text={text} /></p>;
-    }
-    return <p>{text}</p>;
-  };
+  const paragraphComponent = React.useMemo(() => {
+    return (props: any) => <ChapterParagraph {...props} route={route} />;
+  }, [route]);
 
   if (!chapterData) {
     return (
@@ -125,7 +133,7 @@ export function ChapterBody({ route, currentChapter, charColor, isClosing, lang:
             );
           })
         ) : (
-          <ReactMarkdown components={{ p: renderParagraph }}>
+          <ReactMarkdown components={{ p: paragraphComponent }}>
             {getChapterContent()}
           </ReactMarkdown>
         )}

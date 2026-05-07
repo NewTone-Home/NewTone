@@ -247,7 +247,7 @@ export const Library: React.FC = () => {
       z: 3,
       locked: !isVolumeUnsealed('ruoyu'),
       coords: "33.3333° S / 110.0333° W",
-      onClick: () => triggerTransition('/read/ruoyu/1', '展开筮辞'),
+      onClick: () => triggerTransition('/worlds/chumo', '探索'),
     },
     {
       id: 'volume-3',
@@ -259,7 +259,7 @@ export const Library: React.FC = () => {
       z: 2,
       locked: !isVolumeUnsealed('yunling'),
       coords: "12.7833° N / 88.5167° E",
-      onClick: () => triggerTransition('/read/yunling/1', '启封笺纸'),
+      onClick: () => triggerTransition('/worlds/chumo', '探索'),
     },
     {
       id: 'volume-4',
@@ -271,7 +271,7 @@ export const Library: React.FC = () => {
       z: 1,
       locked: !isVolumeUnsealed('chengyuan'),
       coords: "48.1000° N / 16.3667° E",
-      onClick: () => triggerTransition('/read/chengyuan/1', '探寻秘藏'),
+      onClick: () => triggerTransition('/worlds/chumo', '探索'),
     },
   ];
 
@@ -349,7 +349,7 @@ export const Library: React.FC = () => {
             zIndex={island.z}
             locked={island.locked}
             coordinates={island.coords}
-            onClick={island.onClick}
+            onClick={island.locked ? undefined : island.onClick}
           />
         ))}
       </div>

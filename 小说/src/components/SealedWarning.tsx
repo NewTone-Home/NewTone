@@ -3,14 +3,14 @@ import { ScrambleText } from './ScrambleText';
 import { useTheme } from '../contexts/ThemeContext';
 import { UI_TRANSLATIONS } from '../locales';
 
-const SealedWarning: React.FC<{ unlockHint?: any; onBack: () => void; lang?: string }> = ({ unlockHint, onBack, lang: langProp }) => {
+const SealedWarning: React.FC<{ unlockHint?: any; onBack?: () => void; lang?: string; showBack?: boolean }> = ({ unlockHint, onBack, lang: langProp, showBack = true }) => {
   const { lang: contextLang } = useTheme();
   const lang = (langProp ?? contextLang) as any;
   
   const sealText = {
-    zh: '此 · 卷 · 封 · 缄',
+    zh: '此 · 卷 · 封 · 印 · 缄',
     en: 'V O L U M E · S E A L E D',
-    ja: '此 · 巻 · 封 · 緘'
+    ja: '此 · 巻 · 封 · 印 · 緘'
   };
 
   const defaultWarning = {
@@ -152,26 +152,28 @@ const SealedWarning: React.FC<{ unlockHint?: any; onBack: () => void; lang?: str
         <ScrambleText text={unlockHint?.[lang] || defaultWarning[lang]} />
       </div>
 
-      <button 
-        onClick={onBack}
-        style={{
-          marginTop: '12px',
-          padding: '8px 24px',
-          border: '1px solid currentColor',
-          background: 'none',
-          color: 'inherit',
-          fontSize: '12px',
-          cursor: 'pointer',
-          opacity: 0.6,
-          transition: 'all 0.3s ease',
-          fontFamily: 'var(--font-sans)',
-          letterSpacing: '0.1em'
-        }}
-        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-        onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
-      >
-        <ScrambleText text={UI_TRANSLATIONS[lang as any]?.['read.back'] || 'BACK'} />
-      </button>
+      {showBack && onBack && (
+        <button 
+          onClick={onBack}
+          style={{
+            marginTop: '12px',
+            padding: '8px 24px',
+            border: '1px solid currentColor',
+            background: 'none',
+            color: 'inherit',
+            fontSize: '12px',
+            cursor: 'pointer',
+            opacity: 0.6,
+            transition: 'all 0.3s ease',
+            fontFamily: 'var(--font-sans)',
+            letterSpacing: '0.1em'
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+        >
+          <ScrambleText text={UI_TRANSLATIONS[lang as any]?.['read.back'] || 'BACK'} />
+        </button>
+      )}
     </div>
   );
 };

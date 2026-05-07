@@ -89,9 +89,9 @@ const letterData: Record<string, any> = {
   },
   elder: {
     quote: {
-      zh: '「封 · 缄」',
+      zh: '「封 · 印 · 缄」',
       en: '"SEALED · BOUND"',
-      ja: '「封 · 缄」' },
+      ja: '「封 · 印 · 緘」' },
     excerpt: {
       zh: ['此卷未启。'],
       en: ['This volume remains sealed.'],

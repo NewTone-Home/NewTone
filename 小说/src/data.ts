@@ -32,6 +32,9 @@ export const INITIAL_WORLDS: NovelWorld[] = [
     chapters: [
       {
         id: 'c-1-1',
+        routeId: 'jixiu',
+        chapterNumber: 1,
+        type: 'main',
         title: { zh: '序章：天外飞仙', en: 'Prologue: Flying Immortal', ja: '序章：天外飛仙' },
         wordCount: 1205,
         content: {
@@ -42,6 +45,9 @@ export const INITIAL_WORLDS: NovelWorld[] = [
       },
       {
         id: 'c-1-2',
+        routeId: 'jixiu',
+        chapterNumber: 2,
+        type: 'main',
         title: { zh: '第一章：断剑重铸', en: 'Chapter 1: Recasting the Broken Sword', ja: '第一章：断剣重鋳' },
         wordCount: 2150,
         content: {
@@ -65,6 +71,9 @@ export const INITIAL_WORLDS: NovelWorld[] = [
     chapters: [
       {
         id: 'c-2-1',
+        routeId: 'ruoyu',
+        chapterNumber: 1,
+        type: 'main',
         title: { zh: '任务 01：雨夜的包裹', en: 'Mission 01: Package in the Rainy Night', ja: 'ミッション 01：雨夜の小包' },
         wordCount: 1580,
         content: {
@@ -88,6 +97,9 @@ export const INITIAL_WORLDS: NovelWorld[] = [
     chapters: [
       {
         id: 'c-3-1',
+        routeId: 'yunling',
+        chapterNumber: 1,
+        type: 'main',
         title: { zh: '第一章：风沙中的旅人', en: 'Chapter 1: Traveler in the Sandstorm', ja: '第一章：風砂の中の旅人' },
         wordCount: 1420,
         content: {
@@ -111,6 +123,9 @@ export const INITIAL_WORLDS: NovelWorld[] = [
     chapters: [
       {
         id: 'c-4-1',
+        routeId: 'chengyuan',
+        chapterNumber: 1,
+        type: 'main',
         title: { zh: '第一章：禁忌的符文', en: 'Chapter 1: Forbidden Runes', ja: '第一章：禁忌のルーン' },
         wordCount: 1890,
         content: {

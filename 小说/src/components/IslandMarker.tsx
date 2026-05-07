@@ -179,6 +179,7 @@ export const IslandMarker: React.FC<IslandMarkerProps> = ({
         '--plate-size': `${width}px`
       } as React.CSSProperties}
       className="plate-wrap group pointer-events-auto"
+      onClick={onClick}
     >
       <div className="plate-enter-shift">
         <div className="plate-float relative flex flex-col items-center justify-center">
@@ -202,7 +203,6 @@ export const IslandMarker: React.FC<IslandMarkerProps> = ({
               y: locked ? -3 : -6,
               transition: { duration: 0.4 }
             }}
-            onClick={!locked ? onClick : undefined}
           >
             <VolumeDiamondSVG 
               volume={volume as 1|2|3|4} 

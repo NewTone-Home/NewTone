@@ -33,6 +33,45 @@ export interface CharacterCardProps {
   onChapterSelect?: (chapter: number) => void;
 }
 
+const SEALED_LABEL = {
+  zh: '封 · 印 · 缄',
+  en: 'SEALED',
+  ja: '封·印·緘'
+};
+
+const FORBIDDEN_LABEL = {
+  zh: '封 · 印 · 缄 · 不得启',
+  en: 'SEALED · FORBIDDEN',
+  ja: '封·印·緘·开くべからず'
+};
+
+const SEAL_GLYPHS = {
+  ruoyu: '封',
+  yunling: '印',
+  chengyuan: '缄'
+};
+
+const CTA_TEXT = {
+  zh: UI_TRANSLATIONS['zh']['jixiu.cta'],
+  en: UI_TRANSLATIONS['en']['jixiu.cta'],
+  ja: UI_TRANSLATIONS['ja']['jixiu.cta']
+};
+
+const BACK_TEXT = {
+  zh: UI_TRANSLATIONS['zh']['jixiu.back'],
+  en: UI_TRANSLATIONS['en']['jixiu.back'],
+  ja: UI_TRANSLATIONS['ja']['jixiu.back']
+};
+
+const ActionText = ({ children, forceScramble, routeId, reading }: { children: string, forceScramble?: boolean, routeId: string, reading: boolean }) => {
+  if (forceScramble) return <ScrambleText text={children} />;
+  if (routeId === 'jixiu') {
+    if (reading) return <ScrambleText text={children} />;
+    return <FadeText>{children}</FadeText>;
+  }
+  return <ScrambleText text={children} />;
+};
+
 export function CharacterCard({ 
   data, 
   locked, 
@@ -57,6 +96,19 @@ export function CharacterCard({
 
   const [effectiveLang, setEffectiveLang] = React.useState(lang);
   const isJixiuDetail = active && data.id === 'jixiu';
+
+  const unsealed = !locked;
+
+  const currentVolumeLabel = React.useMemo(() => {
+    if (!unsealed) return (SEALED_LABEL as any)[effectiveLang];
+    const labels: Record<string, any> = {
+      jixiu:    { zh: '卷其一', en: 'VOL. I', ja: '巻其一' },
+      ruoyu:    { zh: '卷其二', en: 'VOL. II', ja: '巻其二' },
+      yunling:  { zh: '卷其三', en: 'VOL. III', ja: '巻其三' },
+      chengyuan:{ zh: '卷其四', en: 'VOL. IV', ja: '巻其四' }
+    };
+    return labels[data.id]?.[effectiveLang] || '';
+  }, [data.id, unsealed, effectiveLang]);
 
   React.useEffect(() => {
     if (active) {
@@ -136,52 +188,32 @@ export function CharacterCard({
   const nextChapterNum = currentChapter + 1;
   const hasNextInVolume = nextChapterNum <= totalChapters;
   const isNextUnlocked = isChapterUnlocked(data.id as Route, nextChapterNum);
-  const showCoin = hasNextInVolume && isNextUnlocked;
+  const showCoin = hasNextInVolume && isNextUnlocked && progress >= currentChapter;
 
   const initialShowCoin = React.useRef(showCoin);
 
-  const Text = ({ children, forceScramble }: { children: string, forceScramble?: boolean }) => {
-    if (forceScramble) return <ScrambleText text={children} />;
-    if (data.id === 'jixiu') {
-      if (reading) return <ScrambleText text={children} />;
-      return <FadeText>{children}</FadeText>;
-    }
-    return <ScrambleText text={children} />;
-  };
+  const [isGlitching, setIsGlitching] = React.useState(false);
+  const [manualLockedOverlay, setManualLockedOverlay] = React.useState(false);
 
-  const ctaText = {
-    zh: UI_TRANSLATIONS['zh']['jixiu.cta'],
-    en: UI_TRANSLATIONS['en']['jixiu.cta'],
-    ja: UI_TRANSLATIONS['ja']['jixiu.cta']
-  };
-
-  const backText = {
-    zh: UI_TRANSLATIONS['zh']['jixiu.back'],
-    en: UI_TRANSLATIONS['en']['jixiu.back'],
-    ja: UI_TRANSLATIONS['ja']['jixiu.back']
-  };
-
-  const sealedLabel = {
-    zh: '封 · 缄',
-    en: 'SEALED',
-    ja: '封·緘'
-  };
-  
-  const forbiddenLabel = {
-    zh: '封 · 缄 · 不得启',
-    en: 'SEALED · FORBIDDEN',
-    ja: '封·緘·開くべからず'
+  const triggerGlitch = () => {
+    setIsGlitching(true);
+    setManualLockedOverlay(true);
+    // Only stop the CARD shake after 2s, keep the overlay
+    setTimeout(() => {
+      setIsGlitching(false);
+    }, 2000);
   };
 
   return (
     <div
-      className="card"
+      className={`card ${isGlitching ? 'is-glitching' : ''}`}
       data-locked={locked || undefined}
       data-active={active || undefined}
       data-reading={(reading || isClosing) || undefined}
       data-closing={isClosing || undefined}
       style={{ '--char-color': data.colorHex, position: 'relative' } as React.CSSProperties}
-      onClick={() => {
+      onClick={(e) => {
+        // 封缄态不再拦截点击，允许正常路由跳转到专属封禁页
         onSelect?.()
       }}
     >
@@ -214,7 +246,7 @@ export function CharacterCard({
               boxShadow: '0 0 1px 1px rgba(139, 47, 40, 0.4)'
             }}
           >
-            {data?.seal?.kanji}
+            {SEAL_GLYPHS[data.id as keyof typeof SEAL_GLYPHS] || data?.seal?.kanji}
           </div>
           <div 
             className="cd-anchor-blur" 
@@ -233,7 +265,7 @@ export function CharacterCard({
       <div className="card-default">
         <div className="cd-top">
           <div className="cd-roman">{data.romanIndex}</div>
-          <div className="cd-vol">{data.volumeNum[effectiveLang]}</div>
+          <div className="cd-vol">{currentVolumeLabel}</div>
           <div className="cd-trigram">{data.trigram}</div>
         </div>
 
@@ -245,21 +277,21 @@ export function CharacterCard({
           {!locked ? (
             <>
               <div className="cd-name-zh">
-                <Text>{data.id === 'jixiu' ? UI_TRANSLATIONS[effectiveLang]['route.jixiu.label'] : (data?.name?.[effectiveLang] || data?.name?.zh || '')}</Text>
+                <ActionText routeId={data.id} reading={reading}>{data?.name?.zh || UI_TRANSLATIONS['zh'][`route.${data.id}.label`] || ''}</ActionText>
               </div>
-              {data.id !== 'jixiu' && (
+              {effectiveLang === 'en' && (
                 <div className="cd-name-latin">
-                  <Text>{data?.name?.en || ''}</Text>
+                  <ActionText routeId={data.id} reading={reading}>{data?.name?.en || ''}</ActionText>
                 </div>
               )}
               <div className="cd-swatch">
                 <span className="cd-swatch-box" style={{ background: data?.colorHex }} />
-                <span><Text>{data?.colorLabel?.[effectiveLang]}</Text></span>
+                <span><ActionText routeId={data.id} reading={reading}>{data?.colorLabel?.[effectiveLang]}</ActionText></span>
               </div>
             </>
           ) : (
             <>
-              <div className="cd-wax-label"><Text>{sealedLabel[effectiveLang]}</Text></div>
+              <div className="cd-wax-label"><ActionText routeId={data.id} reading={reading}>{(SEALED_LABEL as any)[effectiveLang]}</ActionText></div>
             </>
           )}
         </div>
@@ -276,45 +308,61 @@ export function CharacterCard({
             transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
             className="card-detail" 
             data-reading={reading || isClosing}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              height: (reading || isClosing) ? '100vh' : '100%',
+              overflow: (reading || isClosing) ? 'hidden' : 'visible'
+            }}
           >
-            <div className="cd-content-wrap" style={{ opacity: isTransitioning ? 0 : 1, transition: 'opacity 0.35s ease-in-out' }}>
-                <div className={`cd-header cd-header-full ${reading ? 'cd-header-collapsed' : ''}`}>
+            <div className="cd-content-wrap" style={{ 
+              opacity: isTransitioning ? 0 : 1, 
+              transition: 'opacity 0.35s ease-in-out, height 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+              height: reading ? '0px' : 'auto',
+              overflow: reading ? 'hidden' : 'visible',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              {!reading && <div className="dt-anchor">{data?.anchor}</div>}
+              <div className={`cd-header cd-header-full ${reading ? 'cd-header-collapsed' : ''}`}>
                   <div className="dt-header">
-                    <span><Text>{`${data?.romanIndex} · ${data?.volumeNum?.[effectiveLang]}`}</Text></span>
+                    <span><ActionText routeId={data.id} reading={!!reading}>{`${data?.romanIndex} · ${currentVolumeLabel}`}</ActionText></span>
                     <span>
-                      <Text>{data.id === 'jixiu' ? data?.colorLabel?.[effectiveLang] : `${data?.trigram} · ${data?.epithet?.[effectiveLang]} · ${data?.colorLabel?.[effectiveLang]} · ${data?.colorHex}`}</Text>
+                      <ActionText routeId={data.id} reading={!!reading}>{data.id === 'jixiu' ? data?.colorLabel?.[effectiveLang] : `${data?.trigram} · ${data?.epithet?.[effectiveLang]} · ${data?.colorLabel?.[effectiveLang]} · ${data?.colorHex}`}</ActionText>
                     </span>
                   </div>
-                  <div className="dt-anchor">{data?.anchor}</div>
                   <h1 className="dt-name-zh">
-                    <Text>{data.id === 'jixiu' ? UI_TRANSLATIONS[effectiveLang]['route.jixiu.label'] : (data?.name?.[effectiveLang] || data?.name?.zh)}</Text>
+                    <ActionText routeId={data.id} reading={!!reading}>{data?.name?.zh || UI_TRANSLATIONS['zh'][`route.${data.id}.label`] || ''}</ActionText>
                   </h1>
                   {data?.alias && (
                     <div className="dt-alias" style={{ fontSize: '14px', opacity: 0.7, marginTop: '-4px', marginBottom: '8px', fontFamily: 'var(--font-sans)', color: 'var(--brass)' }}>
-                      <Text>{data.alias[effectiveLang]}</Text>
+                      <ActionText routeId={data.id} reading={!!reading}>{data.alias[effectiveLang]}</ActionText>
                     </div>
                   )}
-                  {data.id !== 'jixiu' && (
+                  {effectiveLang === 'en' && (
                     <>
                       <div className="dt-name-latin">
-                        <Text>{data?.name?.en}</Text>
+                        <ActionText routeId={data.id} reading={!!reading}>{data?.name?.en}</ActionText>
                       </div>
                       <div className="dt-name-ja">
-                        <Text>{data?.name?.ja}</Text>
+                        <ActionText routeId={data.id} reading={!!reading}>{data?.name?.ja}</ActionText>
                       </div>
                     </>
                   )}
                   <div className="dt-identity">
-                    <Text>{data?.identity?.[effectiveLang]}</Text>
+                    <ActionText routeId={data.id} reading={!!reading}>{data?.identity?.[effectiveLang]}</ActionText>
                   </div>
                   <div className="dt-divider">· · ·</div>
 
                   <div className="dt-preview-block">
                     <blockquote className="dt-quote">
-                      <Text>{data?.quote?.[effectiveLang]}</Text>
+                      <ActionText routeId={data.id} reading={!!reading}>{data?.quote?.[effectiveLang]}</ActionText>
                     </blockquote>
                     <button className="dt-cta" onClick={e => { e.stopPropagation(); onStartReading?.() }}>
-                      <Text>{ctaText[effectiveLang]}</Text>
+                      <ActionText routeId={data.id} reading={!!reading}>{(CTA_TEXT as any)[effectiveLang]}</ActionText>
                     </button>
                   </div>
                 </div>
@@ -327,14 +375,14 @@ export function CharacterCard({
                         <>
                           <span className="cd-compact-symbol">☰</span>
                           <span className="cd-compact-name">
-                            <ScrambleText text={UI_TRANSLATIONS[effectiveLang][`route.${data.id}.label`] || ROUTE_FALLBACK[data.id]} />
+                            <ActionText routeId={data.id} reading={!!reading}>{UI_TRANSLATIONS[effectiveLang][`route.${data.id}.label`] || ROUTE_FALLBACK[data.id]}</ActionText>
                           </span>
                         </>
                       ) : (
                         <>
                           <span className="cd-compact-symbol">{data.trigram}</span>
                           <span className="cd-compact-name">
-                            <Text>{UI_TRANSLATIONS[effectiveLang][`route.${data.id}.label`] || ROUTE_FALLBACK[data.id]}</Text>
+                            <ActionText routeId={data.id} reading={!!reading}>{UI_TRANSLATIONS[effectiveLang][`route.${data.id}.label`] || ROUTE_FALLBACK[data.id]}</ActionText>
                           </span>
                         </>
                       )}
@@ -354,9 +402,9 @@ export function CharacterCard({
                     onClick={(e) => { e.stopPropagation(); onExitReading?.() }}
                   >
                     {data.id === 'jixiu' ? (
-                      <ScrambleText text={backText[effectiveLang]} />
+                      <ScrambleText text={(BACK_TEXT as any)[effectiveLang]} />
                     ) : (
-                      data.id === 'jixiu' ? backText[effectiveLang] : (UI_TRANSLATIONS[lang as any]?.['read.close'] || '← BACK')
+                      data.id === 'jixiu' ? (BACK_TEXT as any)[effectiveLang] : (UI_TRANSLATIONS[lang as any]?.['read.close'] || '← BACK')
                     )}
                   </button>
                   <ZhupiAnnotations lang={effectiveLang} />
@@ -417,14 +465,14 @@ export function CharacterCard({
               <div className="dt-meta" style={{ opacity: isTransitioning ? 0 : 1, transition: 'opacity 0.35s ease-in-out' }}>
                 {dynamicMeta && (
                   <>
-                    <span><Text>{dynamicMeta.volumeNum?.[effectiveLang]}</Text></span>
+                    <span><ActionText routeId={data.id} reading={false}>{currentVolumeLabel}</ActionText></span>
                     <motion.span
                       key={dynamicMeta.appears[effectiveLang]}
                       initial={{ opacity: 0.4 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Text>{dynamicMeta.appears[effectiveLang]}</Text>
+                      <ActionText routeId={data.id} reading={false}>{dynamicMeta.appears[effectiveLang]}</ActionText>
                     </motion.span>
                     <motion.span
                       key={dynamicMeta.words[effectiveLang]}
@@ -432,9 +480,9 @@ export function CharacterCard({
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Text>{dynamicMeta.words[effectiveLang]}</Text>
+                      <ActionText routeId={data.id} reading={false}>{dynamicMeta.words[effectiveLang]}</ActionText>
                     </motion.span>
-                    <span><Text>{dynamicMeta.role?.[effectiveLang]}</Text></span>
+                    <span><ActionText routeId={data.id} reading={false}>{dynamicMeta.role?.[effectiveLang]}</ActionText></span>
                   </>
                 )}
               </div>
@@ -445,10 +493,10 @@ export function CharacterCard({
 
       {/* === 锁定 detail 态（震颤 + 火漆 + 朱批） === */}
       {locked && (
-        <div className="card-detail locked-detail" style={active ? { animation: 'none' } : {}}>
-          {active && !reading && (
+        <div className="card-detail locked-detail" style={(active || manualLockedOverlay) ? { animation: 'none' } : {}}>
+          {(active || manualLockedOverlay) && !reading && (
             <>
-              <div 
+            <div 
                 className="dt-red-stamp" 
                 style={{ 
                   position: 'absolute', 
@@ -472,14 +520,18 @@ export function CharacterCard({
                   boxShadow: '0 0 1px 1px rgba(139, 47, 40, 0.4)'
                 }}
               >
-                {data?.seal?.kanji}
+                {SEAL_GLYPHS[data.id as keyof typeof SEAL_GLYPHS] || data?.seal?.kanji}
               </div>
               <div className="dt-paper-lines" />
             </>
           )}
 
-          {active && (
-            <SealedWarning unlockHint={data.unlockHint} onBack={() => onSelect?.()} lang={effectiveLang} />
+          {(active || manualLockedOverlay) && (
+            <SealedWarning 
+              unlockHint={data.unlockHint} 
+              lang={effectiveLang} 
+              showBack={false}
+            />
           )}
         </div>
       )}
