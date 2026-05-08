@@ -26,7 +26,7 @@ export const CoinButton: React.FC<Props> = ({ charColor, onNext, disabled, route
     }, 600)
   }
 
-  const label = UI_TRANSLATIONS[lang as any]?.['reader.next'] || '下一章 →';
+  const label = UI_TRANSLATIONS[lang as any]?.['reader.next'] || '';
   
   return (
     <button

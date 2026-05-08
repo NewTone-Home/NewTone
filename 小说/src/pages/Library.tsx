@@ -177,7 +177,10 @@ export const Library: React.FC = () => {
   const [entered, setEntered] = useState(false);
   const { lang } = useLang();
 
-  const getT = (key: string) => UI_TRANSLATIONS[lang][key] || key;
+  const getT = (key: string) => {
+    const val = UI_TRANSLATIONS[lang][key];
+    return val !== undefined ? val : '';
+  };
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -276,7 +279,7 @@ export const Library: React.FC = () => {
   ];
 
   const STATUS_TEXTS = [
-    { id: 's1', text: getT('library.status.indexing'), top: '14%', left: '4%', opacity: 0.55, fontSize: 10 },
+    { id: 's1', text: getT('library.status.indexing'), bottom: '18%', right: '6%', opacity: 0.55, fontSize: 10 },
     { id: 's2', text: getT('library.status.volumeIActive'), top: '74%', left: '40%', opacity: 0.40, fontSize: 10 },
     { id: 's3', text: getT('library.status.trace'), top: '32%', left: '46%', opacity: 0.35, fontSize: 9 },
     { id: 's4', text: getT('library.status.sealedRange'), top: '18%', right: '5%', opacity: 0.45, fontSize: 10 },
@@ -299,7 +302,7 @@ export const Library: React.FC = () => {
 
       {/* Status Texts Layer */}
       <div className="lib-marginalia-layer" aria-hidden="true">
-        {STATUS_TEXTS.map(s => (
+        {STATUS_TEXTS.map(s => s.text && (
           <div
             key={s.id}
             className="lib-marginalia"
@@ -320,19 +323,22 @@ export const Library: React.FC = () => {
       {/* Map Content Container */}
       <div className="relative w-full flex-1 flex items-center justify-center z-10">
         <header className="lib-title">
-          <p className="lib-title-en"><ScrambleText text={getT('library.title.en')} /></p>
-          <p className="lib-title-cn"><ScrambleText text={getT('library.title.cn')} /></p>
+          {getT('library.title.en') && <p className="lib-title-en"><ScrambleText text={getT('library.title.en')} /></p>}
+          {getT('library.title.cn') && <p className="lib-title-cn"><ScrambleText text={getT('library.title.cn')} /></p>}
         </header>
 
         <div className="lib-unknown-land">
-          <div className="lib-unknown-land-title"><ScrambleText text={getT('library.unchartedTitle')} /></div>
-          <div className="lib-unknown-land-note"><ScrambleText text={getT('library.unchartedNote')} /> · <ScrambleText text="此处尚无记载" /></div>
+          {getT('library.unchartedTitle') && <div className="lib-unknown-land-title"><ScrambleText text={getT('library.unchartedTitle')} /></div>}
+          <div className="lib-unknown-land-note">
+            {getT('library.unchartedNote') && <><ScrambleText text={getT('library.unchartedNote')} /> · </>}
+            <ScrambleText text="此处尚无记载" />
+          </div>
         </div>
 
         <div className="lib-compass-bottom">
           <div className="lib-coord-line"><ScrambleText text="35.2500° N" /></div>
           <div className="lib-coord-line"><ScrambleText text="122.7167° E" /></div>
-          <div className="lib-coord-note"><ScrambleText text={getT('library.originPoint')} /></div>
+          {getT('library.originPoint') && <div className="lib-coord-note"><ScrambleText text={getT('library.originPoint')} /></div>}
         </div>
 
         {/* REALTIME INK TRAIL LAYER */}

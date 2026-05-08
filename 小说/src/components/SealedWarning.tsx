@@ -15,8 +15,12 @@ const SealedWarning: React.FC<{ unlockHint?: any; onBack?: () => void; lang?: st
 
   const defaultWarning = {
     zh: '缄者，慎言也。时机未至，此卷不可阅。',
-    en: 'Sealed. The time has not yet come. This volume remains closed.',
-    ja: '緘者、慎言なり。時至らざれば、此の巻は閲覧能わず。'
+    en: 'To seal is to silence. The time has not come; this volume may not be read.',
+    ja: '缄とは、慎みて言わざるなり。時いまだ至らず、この巻読むべからず。'
+  };
+
+  const getT = (key: string) => {
+    return UI_TRANSLATIONS[lang]?.[key] || '';
   };
 
   return (
@@ -149,7 +153,7 @@ const SealedWarning: React.FC<{ unlockHint?: any; onBack?: () => void; lang?: st
       </div>
       
       <div className="warning-sub">
-        <ScrambleText text={unlockHint?.[lang] || defaultWarning[lang]} />
+        <ScrambleText text={getT('read.sealed.message') || defaultWarning[lang]} />
       </div>
 
       {showBack && onBack && (
@@ -171,7 +175,7 @@ const SealedWarning: React.FC<{ unlockHint?: any; onBack?: () => void; lang?: st
           onMouseEnter={e => e.currentTarget.style.opacity = '1'}
           onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
         >
-          <ScrambleText text={UI_TRANSLATIONS[lang as any]?.['read.back'] || 'BACK'} />
+          <ScrambleText text={getT('read.back')} />
         </button>
       )}
     </div>

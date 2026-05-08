@@ -146,7 +146,7 @@ export function CharacterCard({
       1: { zh: '见·第一章', en: 'Ch.1', ja: '第一章' }, // If they haven't finished ch1, they are reading ch1
     };
     
-    const t = (key: string) => UI_TRANSLATIONS[effectiveLang][key] || key;
+    const t = (key: string) => UI_TRANSLATIONS[effectiveLang][key] || '';
     
     // N is the number of chapters COMPLETE.
     const currentUnlockedIndex = Math.min(progress + 1, totalChapters);

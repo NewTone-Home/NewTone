@@ -153,10 +153,12 @@ export const IslandMarker: React.FC<IslandMarkerProps> = ({
   const volume = volumeMap[id] || 1;
 
   const getT = (key: string, params?: Record<string, string>) => {
-    let text = UI_TRANSLATIONS[lang][key] || key;
+    let text = UI_TRANSLATIONS[lang][key];
+    if (text === undefined) return '';
+    
     if (params) {
       Object.entries(params).forEach(([k, v]) => {
-        text = text.replace(`{{${k}}}`, v);
+        text = text!.replace(`{{${k}}}`, v);
       });
     }
     return text;
@@ -212,9 +214,11 @@ export const IslandMarker: React.FC<IslandMarkerProps> = ({
           </motion.div>
 
           <div className="volume-label">
-            <div className="tracking-[0.1em]">
-               <ScrambleText text={volTitle} />
-            </div>
+            {volTitle && (
+              <div className="tracking-[0.1em]">
+                 <ScrambleText text={volTitle} />
+              </div>
+            )}
             
             {coordinates && (
               <div className="volume-coord">

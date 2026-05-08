@@ -27,7 +27,7 @@ export function ChapterView({ route, currentRouteChapter }: ChapterViewProps) {
   const currentChapter = loadChapter(route, currentRouteChapter);
   const fs = getFontSize();
 
-  const t = (key: string) => UI_TRANSLATIONS[lang]?.[key] || key;
+  const t = (key: string) => UI_TRANSLATIONS[lang]?.[key] || '';
 
   if (!currentChapter) return null;
 

@@ -97,7 +97,7 @@ export function ChapterBody({ route, currentChapter, charColor, isClosing, lang:
   if (!chapterData) {
     return (
       <div className="chapter-body">
-        <div className="chapter-meta">{UI_TRANSLATIONS[lang as any]?.['common.loading'] || 'Loading...'}</div>
+        <div className="chapter-meta">{UI_TRANSLATIONS[lang as any]?.['common.loading'] || ''}</div>
       </div>
     )
   }

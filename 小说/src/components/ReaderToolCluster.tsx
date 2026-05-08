@@ -21,7 +21,7 @@ export const ReaderToolCluster: React.FC<ReaderToolClusterProps> = ({ fontSize, 
 
   const isJixiu = route === 'jixiu';
 
-  const t = (key: string) => UI_TRANSLATIONS[lang]?.[key] || key;
+  const t = (key: string) => UI_TRANSLATIONS[lang]?.[key] || '';
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
