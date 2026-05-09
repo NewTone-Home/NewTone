@@ -15,6 +15,7 @@ type Props = {
   isClosing?: boolean
   lang?: string
   onAdvance: (nextChapter: number) => void
+  onAtBottomChange?: (atBottom: boolean) => void
 }
 
 const ChapterParagraph = ({ children, route }: { children: any, route: string }) => {
@@ -29,7 +30,7 @@ const ChapterParagraph = ({ children, route }: { children: any, route: string })
   return <p>{children}</p>;
 };
 
-export function ChapterBody({ route, currentChapter, charColor, isClosing, lang: langProp }: Props) {
+export function ChapterBody({ route, currentChapter, charColor, isClosing, lang: langProp, onAtBottomChange }: Props) {
   const { fontSize, lang: contextLang } = useTheme()
   const lang = langProp ?? contextLang
   const { markRead } = useReadingProgress(route)
@@ -48,18 +49,19 @@ export function ChapterBody({ route, currentChapter, charColor, isClosing, lang:
   };
 
   useEffect(() => {
-    if (route !== 'jixiu') return;
-
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0];
       if (entry.isIntersecting) {
-        console.log(`[Sentinel] TRIGGERED: ${route} ch${currentChapter} is now read.`);
-        markRead(currentChapter);
+        if (route === 'jixiu') {
+          console.log(`[Sentinel] TRIGGERED: ${route} ch${currentChapter} is now read.`);
+          markRead(currentChapter);
+        }
       }
+      onAtBottomChange?.(entry.isIntersecting);
     }, { 
-      threshold: 0.5,
+      threshold: 0.1, // Trigger as soon as it appears
       root: null,
-      rootMargin: '0px 0px -20px 0px' // Trigger only when well into view
+      rootMargin: '0px 0px 0px 0px' 
     })
 
     if (sentinelRef.current) {

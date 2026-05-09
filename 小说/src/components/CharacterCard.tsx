@@ -188,7 +188,15 @@ export function CharacterCard({
   const nextChapterNum = currentChapter + 1;
   const hasNextInVolume = nextChapterNum <= totalChapters;
   const isNextUnlocked = isChapterUnlocked(data.id as Route, nextChapterNum);
-  const showCoin = hasNextInVolume && isNextUnlocked && progress >= currentChapter;
+  
+  const [atBottom, setAtBottom] = React.useState(false);
+  const [shakeTrigger, setShakeTrigger] = React.useState(0);
+
+  React.useEffect(() => {
+    setAtBottom(false);
+  }, [currentChapter, data.id]);
+
+  const showCoin = hasNextInVolume && atBottom;
 
   const initialShowCoin = React.useRef(showCoin);
 
@@ -419,44 +427,59 @@ export function CharacterCard({
                     id="character-progress-line"
                     style={{ '--progress': (progress / totalChapters) } as React.CSSProperties}
                   />
-                  <ChapterBody 
-                    key={`${data.id}-${currentChapter}`}
-                    route={data.id}
-                    currentChapter={currentChapter}
-                    charColor={data.colorHex}
-                    isClosing={isClosing}
-                    lang={effectiveLang}
-                    onAdvance={(n) => onChapterSelect?.(n)}
-                  />
+                    <ChapterBody 
+                      key={`${data.id}-${currentChapter}`}
+                      route={data.id}
+                      currentChapter={currentChapter}
+                      charColor={data.colorHex}
+                      isClosing={isClosing}
+                      lang={effectiveLang}
+                      onAdvance={(n) => onChapterSelect?.(n)}
+                      onAtBottomChange={(val) => setAtBottom(val)}
+                    />
 
-                  <div className="cb-coin-wrap">
-                    <AnimatePresence>
-                      {showCoin && (
-                        <motion.div
-                          key="coin"
-                          initial={data.id === 'jixiu' && !initialShowCoin.current ? { opacity: 0, filter: 'blur(4px)', y: -4 } : { opacity: 1 }}
-                          animate={{ opacity: 1, filter: 'blur(0)', y: 0 }}
-                          exit={{ opacity: 0, filter: 'blur(4px)', y: -4 }}
-                          transition={{ duration: 0.6, ease: 'easeOut' }}
-                        >
-                          <CoinButton 
-                            charColor={data.colorHex}
-                            route={data.id}
-                            onNext={() => {
-                              const cur = currentChapter;
-                              console.log(`[Coin] Clicked at ch${cur}`);
-                              markRead(cur); // Use the new markRead
-                              markChapterReadLegacy(data.id, cur, cur); // Keep legacy for compatibility
-                              if (cur < totalChapters) {
-                                onChapterSelect?.(cur + 1);
-                              }
+                    <div className="cb-coin-wrap">
+                      <AnimatePresence>
+                        {showCoin && (
+                          <motion.div
+                            key="coin"
+                            initial={{ opacity: 0 }}
+                            animate={{ 
+                              opacity: 1, 
+                              x: shakeTrigger ? [0, -10, 10, -10, 10, 0] : 0
                             }}
-                            disabled={currentChapter >= totalChapters}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                            exit={{ opacity: 0 }}
+                            transition={{ 
+                              opacity: { duration: 0.4 },
+                              x: { duration: 0.4, ease: "easeInOut" }
+                            }}
+                          >
+                            <CoinButton 
+                              charColor={data.colorHex}
+                              route={data.id}
+                              onNext={() => {
+                                if (!isNextUnlocked) {
+                                  console.log(`[Coin] Next chapter ${nextChapterNum} is locked.`);
+                                  setShakeTrigger(prev => prev + 1);
+                                  // Reset shake trigger after animation
+                                  setTimeout(() => setShakeTrigger(0), 500);
+                                  return;
+                                }
+                                
+                                const cur = currentChapter;
+                                console.log(`[Coin] Clicked at ch${cur}`);
+                                markRead(cur);
+                                markChapterReadLegacy(data.id, cur, cur);
+                                if (cur < totalChapters) {
+                                  onChapterSelect?.(cur + 1);
+                                }
+                              }}
+                              disabled={false} // Click is handled via isNextUnlocked logic above
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                 </>
               )}
             </div>
